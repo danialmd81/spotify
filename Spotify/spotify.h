@@ -4,8 +4,9 @@
 #include <QMainWindow>
 
 QT_BEGIN_NAMESPACE
-namespace Ui {
-class Spotify;
+namespace Ui
+{
+    class Spotify;
 }
 QT_END_NAMESPACE
 
