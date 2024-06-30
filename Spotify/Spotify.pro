@@ -9,13 +9,22 @@ CONFIG += c++23
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    Login/forgetpassword.cpp \
+    Login/login.cpp \
+    Login/register.cpp \
     main.cpp \
     spotify.cpp
 
 HEADERS += \
+    Login/forgetpassword.h \
+    Login/login.h \
+    Login/register.h \
     spotify.h
 
 FORMS += \
+    Login/forgetpassword.ui \
+    Login/login.ui \
+    Login/register.ui \
     spotify.ui
 
 # Default rules for deployment.
