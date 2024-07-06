@@ -3,7 +3,6 @@ const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
-const { log } = require('console');
 
 const app = express();
 const port = 3000;
@@ -53,30 +52,43 @@ app.post('/auth', (req, res) => {
     }
 });
 
+
 app.post('/register', (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
     const email = req.body.email;
     const birthday = req.body.birthday;
     const address = req.body.address;
+    const options = req.body.options;
 
     if (username && password && email && birthday && address) {
         db.query('SELECT * FROM users WHERE username = ? OR email = ?', [username, email], (err, results) => {
             if (err) throw err;
             if (results.length > 0) {
-                res.redirect('/?error=alreadyexistsuser');
+                return res.redirect('/?error=alreadyexistsuser');
             } else {
                 db.query('INSERT INTO users (username, password, email, birthday, address) VALUES (?, ?, ?, ?, ?)',
                     [username, password, email, birthday, address], (err, results) => {
                         if (err) throw err;
                         req.session.loggedin = true;
                         req.session.username = username;
-                        res.redirect('/home');
+                        const userId = results.insertId;
+
+                        if (options === "singer") {
+                            db.query('INSERT INTO artist (ArtistID, name) VALUES (?,?)',
+                                [userId, username], (err, results) => {
+                                    if (err) throw err;
+                                    res.redirect('/home');
+                                });
+                        } else {
+                            res.redirect('/home');
+                        }
                     });
             }
         });
     }
 });
+
 
 app.get('/home', (req, res) => {
     if (req.session.loggedin) {
