@@ -43,6 +43,7 @@ CREATE TABLE Songs (
     age VARCHAR(255) NOT NULL,
     lyric VARCHAR(1024) NOT NULL,
     is_limited BOOLEAN DEFAULT FALSE,
+    audio_file LONGBLOB,
     Foreign Key (ArtistID) REFERENCES Artist (ArtistID) on DELETE CASCADE,
     Foreign Key (Album_Title) REFERENCES Album (Title) on DELETE CASCADE
 );
