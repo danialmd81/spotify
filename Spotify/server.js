@@ -5,7 +5,9 @@ const session = require('express-session');
 const path = require('path');
 
 const app = express();
+app.use(express.json());
 const port = 3000;
+
 
 const db = mysql.createConnection({
     host: 'localhost',
@@ -34,6 +36,8 @@ app.use('/js', express.static(path.join(__dirname, 'js')));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
+
+// login
 
 app.post('/auth', (req, res) => {
     const username = req.body.username;
@@ -90,13 +94,121 @@ app.post('/register', (req, res) => {
 });
 
 
+// login
+
+
 app.get('/home', (req, res) => {
     if (req.session.loggedin) {
-        res.sendFile(path.join(__dirname, 'public', 'home.html'));
+        const username = req.session.username;
+
+        db.query('SELECT * FROM users WHERE username = ?', [username], (err, userResults) => {
+            if (err) throw err;
+            if (userResults.length > 0) {
+                const userId = userResults[0].UserID;
+                const isPremium = userResults[0].is_premium;
+
+                db.query('SELECT * FROM artist WHERE ArtistID = ?', [userId], (err, artistResults) => {
+                    if (err) throw err;
+
+                    let userType = 'normal';
+                    if (artistResults.length > 0) {
+                        userType = 'artist';
+                    } else if (isPremium) {
+                        userType = 'premium';
+                    }
+
+                    res.sendFile(path.join(__dirname, 'public', 'home.html'));
+                    req.session.userType = userType;
+                });
+            } else {
+                res.redirect('/');
+            }
+        });
     } else {
         res.redirect('/');
     }
 });
+
+app.get('/getUserType', (req, res) => {
+    if (req.session.loggedin) {
+        res.json({ userType: req.session.userType });
+    } else {
+        res.status(401).json({ error: 'User not logged in' });
+    }
+});
+
+// wallet
+
+app.get('/wallet', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'wallet.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getWalletBalance', (req, res) => {
+    if (req.session.loggedin) {
+        const username = req.session.username;
+
+        db.query('SELECT wallet FROM users WHERE username = ?', [username], (err, results) => {
+            if (err) throw err;
+            if (results.length > 0) {
+                res.json({ wallet: results[0].wallet });
+            } else {
+                res.json({ wallet: 0 });
+            }
+        });
+    } else {
+        res.status(401).json({ error: 'User not logged in' });
+    }
+});
+
+app.post('/wallet/add', (req, res) => {
+    if (req.session.loggedin) {
+        const username = req.session.username;
+        const amount = parseFloat(req.body.amount);
+
+        db.query('UPDATE Users SET wallet = wallet + ? WHERE username = ?', [amount, username], (err, results) => {
+            if (err) throw err;
+            db.query('SELECT wallet FROM Users WHERE username = ?', [username], (err, results) => {
+                if (err) throw err;
+                res.json({ wallet: results[0].wallet, message: 'Money added successfully.' });
+            });
+        });
+    } else {
+        res.status(401).json({ error: 'User not logged in' });
+    }
+});
+
+app.post('/wallet/take', (req, res) => {
+    console.log(req.body.amount);
+    if (req.session.loggedin) {
+        const username = req.session.username;
+        const amount = parseFloat(req.body.amount);
+
+        db.query('SELECT wallet FROM Users WHERE username = ?', [username], (err, results) => {
+            if (err) throw err;
+            if (results[0].wallet < amount) {
+                res.json({ error: 'Insufficient funds in wallet.' });
+            } else {
+                db.query('UPDATE Users SET wallet = wallet - ? WHERE username = ?', [amount, username], (err, results) => {
+                    if (err) throw err;
+                    db.query('SELECT wallet FROM Users WHERE username = ?', [username], (err, results) => {
+                        if (err) throw err;
+                        res.json({ wallet: results[0].wallet, message: 'Money taken successfully.' });
+                    });
+                });
+            }
+        });
+    } else {
+        res.status(401).json({ error: 'User not logged in' });
+    }
+});
+
+
+// wallet
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
