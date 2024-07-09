@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify</title>
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/favsong.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul id="menu"></ul>
+        </div>
+        <div class="content">
+            <h1>Manage Favorite Songs</h1>
+            <button id="showSongsBtn">Show all Songs</button>
+            <table id="songsTable" class="hidden">
+                <thead>
+                    <tr>
+                        <th>Song name</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <h2>Your Favorite Songs</h2>
+            <ul id="songsList"></ul>
+        </div>
+    </div>
+    <script src="../js/home.js"></script>
+    <script src="../js/favsong.js"></script>
+</body>
+
+</html>
