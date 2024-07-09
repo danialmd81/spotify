@@ -22,26 +22,6 @@ document.getElementById('addSongForm').addEventListener('submit', async function
         alert('Failed to add song.');
     }
 });
-
-// async function loadSongs() {
-//     const response = await fetch('/getSongs');
-//     const songs = await response.json();
-//     const songsList = document.getElementById('songsList');
-//     songsList.innerHTML = '';
-//     songs.forEach(song => {
-//         const songElement = document.createElement('div');
-//         songElement.innerHTML = `
-//             <h3>${song.name}</h3>
-//             <audio controls>
-//                 <source src="data:audio/*;base64,${song.audio_file}" type="audio/mpeg">
-//                 Your browser does not support the audio element.
-//             </audio>
-//         `;
-//         songsList.appendChild(songElement);
-//     });
-// }
-
-
 async function loadSongs() {
     const response = await fetch('/getSongs');
     const songs = await response.json();
