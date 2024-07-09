@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.json())
         .then(data => {
             const userType = data.userType;
+            console.log(userType);
             const menu = document.getElementById('menu');
 
             const menus = {
@@ -16,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
             userMenu.forEach(item => {
                 const li = document.createElement('li');
                 const aTag = document.createElement('a');
-                aTag.href = item;
+                aTag.href = item.split(" ").join("");
                 aTag.textContent = item;
                 li.appendChild(aTag);
                 menu.appendChild(li);

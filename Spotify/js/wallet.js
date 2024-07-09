@@ -27,7 +27,6 @@ document.getElementById('takeMoney').addEventListener('click', () => {
 
 document.getElementById('submitMoney').addEventListener('click', () => {
     const value = parseFloat(moneyValue.value);
-    console.log("vv : ", value);
     if (isNaN(value) || value <= 0) {
         walletMessage.textContent = 'Please enter a valid amount.';
         walletMessage.style.display = 'block';
@@ -45,13 +44,11 @@ document.getElementById('submitMoney').addEventListener('click', () => {
         .then(data => {
             if (data.error) {
                 walletMessage.textContent = data.error;
+                walletMessage.style.backgroundColor = "#ffcccb";
+                walletMessage.style.color = "#d8000c";
             } else {
                 document.getElementById('balance').textContent = `$${data.wallet}`;
                 walletMessage.textContent = data.message;
-            }
-            if (data.error) {
-                walletMessage.style.backgroundColor = "#ffcccb";
-                walletMessage.style.color = "#d8000c";
             }
             walletMessage.style.display = 'block';
             walletInput.style.display = 'none';

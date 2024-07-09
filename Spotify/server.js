@@ -37,8 +37,8 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
-// login
 
+// login
 app.post('/auth', (req, res) => {
     const username = req.body.username;
     const password = req.body.password;
@@ -96,6 +96,7 @@ app.post('/register', (req, res) => {
 
 // login
 
+// home
 
 app.get('/home', (req, res) => {
     if (req.session.loggedin) {
@@ -136,6 +137,8 @@ app.get('/getUserType', (req, res) => {
         res.status(401).json({ error: 'User not logged in' });
     }
 });
+
+// home
 
 // wallet
 
@@ -182,7 +185,6 @@ app.post('/wallet/add', (req, res) => {
 });
 
 app.post('/wallet/take', (req, res) => {
-    console.log(req.body.amount);
     if (req.session.loggedin) {
         const username = req.session.username;
         const amount = parseFloat(req.body.amount);
@@ -208,6 +210,47 @@ app.post('/wallet/take', (req, res) => {
 
 
 // wallet
+
+// buy premium account
+
+app.get('/BuyPremiumAccount', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'buypremium.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/addToPremium', (req, res) => {
+    if (req.session.loggedin) {
+        const username = req.session.username;
+
+        db.query('SELECT * FROM Users WHERE username = ?', [username], (err, results) => {
+            if (err) throw err;
+
+            if (results.length > 0) {
+                const userId = results[0].UserID;
+
+                db.query('INSERT INTO PremiumUsers (PremiumID) VALUES (?)', [userId], (err, results) => {
+                    if (err) throw err;
+
+                    db.query('UPDATE Users SET is_premium = 1 WHERE UserID = ?', [userId], (err, results) => {
+                        if (err) throw err;
+                        res.redirect('/');
+                    });
+                });
+            } else {
+                res.redirect('/');
+            }
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+
+
+// buy premium account
 
 
 app.listen(port, () => {
