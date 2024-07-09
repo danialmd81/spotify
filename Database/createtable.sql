@@ -33,6 +33,14 @@ CREATE TABLE Album (
     FOREIGN KEY (ArtistID) REFERENCES Artist (ArtistID) ON DELETE CASCADE
 );
 
+CREATE Table Albums - Songs (
+    SongID INT,
+    Album_Title VARCHAR(255),
+    PRIMARY KEY (SongID, Album_Title),
+    Foreign Key (SongID) REFERENCES Songs (SongID) on DELETE CASCADE,
+    Foreign Key (Album_Title) REFERENCES Album (Title) on DELETE CASCADE
+)
+
 CREATE TABLE Songs (
     SongID INT PRIMARY KEY auto_increment,
     name VARCHAR(255) NOT NULL,
@@ -45,7 +53,6 @@ CREATE TABLE Songs (
     is_limited BOOLEAN DEFAULT FALSE,
     audio_file LONGBLOB,
     Foreign Key (ArtistID) REFERENCES Artist (ArtistID) on DELETE CASCADE,
-    Foreign Key (Album_Title) REFERENCES Album (Title) on DELETE CASCADE
 );
 
 CREATE TABLE Playlists (
