@@ -56,6 +56,7 @@ app.post('/auth', (req, res) => {
             if (results.length > 0) {
                 req.session.loggedin = true;
                 req.session.username = username;
+                req.session.userId = results[0].UserID;
                 res.redirect('/home');
             } else {
                 res.redirect('/?error=nouser');
@@ -301,9 +302,6 @@ app.post('/addSong', upload.single('audio_file'), (req, res) => {
 
 app.get('/getSongs', (req, res) => {
     if (req.session.loggedin) {
-
-
-
         db.query('SELECT * FROM users WHERE username = ?', [req.session.username], (err, userResults) => {
             if (err) {
                 console.error(err);
@@ -335,6 +333,79 @@ app.get('/getSongs', (req, res) => {
 });
 
 //add song
+
+// follwers
+
+app.get('/Followers', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'Followers.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getNonFollowers', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId; // Assuming userId is stored in session
+        const query = `
+            SELECT * FROM Users WHERE UserID NOT IN (
+                SELECT FollowerID FROM Followers WHERE PremiumID = ?
+            ) AND UserID != ? AND is_premium = true
+        `;
+        db.query(query, [userId, userId], (err, results) => {
+            if (err) throw err;
+            res.json({ nonFollowers: results });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/followUser/:id', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId; // Assuming userId is stored in session
+        const followUserId = req.params.id;
+        const query = `INSERT INTO Followers (PremiumID, FollowerID) VALUES (?, ?)`;
+
+        db.query(query, [userId, followUserId], (err, result) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+
+app.post('/unfollowUser/:id', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId; // Assuming userId is stored in session
+        const unfollowUserId = req.params.id;
+        const query = `DELETE FROM Followers WHERE PremiumID = ? AND FollowerID = ?`;
+
+        db.query(query, [userId, unfollowUserId], (err, result) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+
+app.get('/getFollowers', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId; // Assuming userId is stored in session
+        const query = `
+            SELECT U.UserID, U.username FROM Followers F
+            JOIN Users U ON F.FollowerID = U.UserID
+            WHERE F.PremiumID = ?
+        `;
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            res.json({ followers: results });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+
+// followers
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Followers</title>
+    <link rel="stylesheet" href="../style/followers.css">
+    <link rel="stylesheet" href="../style/home.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul id="menu"></ul>
+        </div>
+        <div class="content">
+            <h1>Manage Followers</h1>
+            <button id="followersBtn">Show Users to Follow</button>
+            <table id="usersTable" class="hidden">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <h2>Your Followers</h2>
+            <ul id="followersList"></ul>
+        </div>
+    </div>
+    <script src="../js/followers.js"></script>
+    <script src="../js/home.js"></script>
+</body>
+
+</html>
