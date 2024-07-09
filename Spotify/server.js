@@ -13,7 +13,7 @@ const port = 3000;
 const db = mysql.createConnection({
     host: 'localhost',
     user: 'root',
-    password: 'dani',
+    password: 'sobhanAGH5897',
     database: 'spotify'
 });
 
@@ -34,10 +34,6 @@ app.use('/style', express.static(path.join(__dirname, 'style')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 
 
-// const upload = multer({
-//     storage: multer.memoryStorage(),
-//     limits: { fileSize: 100 * 1024 * 1024 * 1024 }
-// });
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
@@ -346,7 +342,7 @@ app.get('/Followers', (req, res) => {
 
 app.get('/getNonFollowers', (req, res) => {
     if (req.session.loggedin) {
-        const userId = req.session.userId; // Assuming userId is stored in session
+        const userId = req.session.userId;
         const query = `
             SELECT * FROM Users WHERE UserID NOT IN (
                 SELECT FollowerID FROM Followers WHERE PremiumID = ?
@@ -363,7 +359,7 @@ app.get('/getNonFollowers', (req, res) => {
 
 app.post('/followUser/:id', (req, res) => {
     if (req.session.loggedin) {
-        const userId = req.session.userId; // Assuming userId is stored in session
+        const userId = req.session.userId;
         const followUserId = req.params.id;
         const query = `INSERT INTO Followers (PremiumID, FollowerID) VALUES (?, ?)`;
 
@@ -376,7 +372,7 @@ app.post('/followUser/:id', (req, res) => {
 
 app.post('/unfollowUser/:id', (req, res) => {
     if (req.session.loggedin) {
-        const userId = req.session.userId; // Assuming userId is stored in session
+        const userId = req.session.userId;
         const unfollowUserId = req.params.id;
         const query = `DELETE FROM Followers WHERE PremiumID = ? AND FollowerID = ?`;
 
@@ -389,7 +385,7 @@ app.post('/unfollowUser/:id', (req, res) => {
 
 app.get('/getFollowers', (req, res) => {
     if (req.session.loggedin) {
-        const userId = req.session.userId; // Assuming userId is stored in session
+        const userId = req.session.userId;
         const query = `
             SELECT U.UserID, U.username FROM Followers F
             JOIN Users U ON F.FollowerID = U.UserID
@@ -406,6 +402,80 @@ app.get('/getFollowers', (req, res) => {
 
 
 // followers
+
+
+// favorite songs
+
+app.get('/FavoriteSong', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'favsong.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getNonFavSongs', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const query = `
+            SELECT * FROM Songs WHERE SongID NOT IN (
+                SELECT SID FROM Favorite_Song WHERE PrID = ?
+            ) 
+        `;
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            res.json({ nonFavSongs: results });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/favUserSong/:id', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const songId = req.params.id;
+        const query = `INSERT INTO Favorite_Song (PrID, SID) VALUES (?, ?)`;
+
+        db.query(query, [userId, songId], (err, result) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+
+
+app.get('/getAllSongs', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const query = `
+            SELECT S.SongID, S.name FROM Songs S
+            JOIN Favorite_Song F ON F.SID = S.SongID
+            WHERE F.PrID = ?
+        `;
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            res.json({ allSongs: results });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/notFavUserSong/:id', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const songId = req.params.id;
+        const query = `DELETE FROM Favorite_Song WHERE PrID = ? AND SID = ?`;
+
+        db.query(query, [userId, songId], (err, result) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+
+// favorite songs
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

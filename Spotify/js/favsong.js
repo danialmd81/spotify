@@ -1,21 +1,21 @@
-document.getElementById('followersBtn').addEventListener('click', () => {
-    fetch('/getNonFollowers')
+document.getElementById('showSongsBtn').addEventListener('click', () => {
+    fetch('/getNonFavSongs')
         .then(response => response.json())
         .then(data => {
-            const table = document.getElementById('usersTable');
+            const table = document.getElementById('songsTable');
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
 
-            data.nonFollowers.forEach(user => {
+            data.nonFavSongs.forEach(song => {
                 const tr = document.createElement('tr');
-                const tdUsername = document.createElement('td');
-                tdUsername.textContent = user.username;
+                const tdSongname = document.createElement('td');
+                tdSongname.textContent = song.name;
 
                 const tdAction = document.createElement('td');
-                const followBtn = document.createElement('button');
-                followBtn.textContent = 'Follow';
-                followBtn.addEventListener('click', () => {
-                    fetch(`/followUser/${user.UserID}`, { method: 'POST' })
+                const addFavBtn = document.createElement('button');
+                addFavBtn.textContent = 'Add To Favorite';
+                addFavBtn.addEventListener('click', () => {
+                    fetch(`/favUserSong/${song.SongID}`, { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -27,9 +27,9 @@ document.getElementById('followersBtn').addEventListener('click', () => {
                             }
                         });
                 });
-                tdAction.appendChild(followBtn);
+                tdAction.appendChild(addFavBtn);
 
-                tr.appendChild(tdUsername);
+                tr.appendChild(tdSongname);
                 tr.appendChild(tdAction);
                 tbody.appendChild(tr);
             });
@@ -39,21 +39,21 @@ document.getElementById('followersBtn').addEventListener('click', () => {
 });
 
 function loadFollowers() {
-    fetch('/getFollowers')
+    fetch('/getAllSongs')
         .then(response => response.json())
         .then(data => {
-            const followersList = document.getElementById('followersList');
+            const followersList = document.getElementById('songsList');
             followersList.innerHTML = '';
 
-            data.followers.forEach(follower => {
+            data.allSongs.forEach(song => {
                 const li = document.createElement('li');
-                li.textContent = follower.username;
+                li.textContent = song.name;
 
-                const unfollowBtn = document.createElement('button');
-                unfollowBtn.textContent = 'Unfollow';
-                unfollowBtn.classList.add("unfollowBtn");
-                unfollowBtn.addEventListener('click', () => {
-                    fetch(`/unfollowUser/${follower.UserID}`, { method: 'POST' })
+                const removeFavBtn = document.createElement('button');
+                removeFavBtn.textContent = 'Remove From Favorite';
+                removeFavBtn.classList.add("removeFavBtn");
+                removeFavBtn.addEventListener('click', () => {
+                    fetch(`/notFavUserSong/${song.SongID}`, { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
@@ -66,7 +66,7 @@ function loadFollowers() {
                         });
                 });
 
-                li.appendChild(unfollowBtn);
+                li.appendChild(removeFavBtn);
                 followersList.appendChild(li);
             });
         });

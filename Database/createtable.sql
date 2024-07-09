@@ -145,6 +145,14 @@ CREATE Table Favorite (
     Foreign Key (AID) REFERENCES Artist (ArtistID) on DELETE CASCADE
 );
 
+CREATE Table Favorite_Song (
+    ID INT PRIMARY KEY auto_increment,
+    PrID INT,
+    SID INT,
+    Foreign Key (PrID) REFERENCES PremiumUsers (PremiumID) on DELETE CASCADE,
+    Foreign Key (SID) REFERENCES Songs (SongID) on DELETE CASCADE
+)
+
 CREATE Table Favorite_Artist (
     PrID INT,
     ArID INT,
