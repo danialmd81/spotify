@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify</title>
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/addsong.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul id="menu">
+            </ul>
+        </div>
+        <div class="content">
+            <h1>Add a New Song</h1>
+            <form id="addSongForm">
+                <label for="name">Song Name:</label>
+                <input type="text" id="name" name="name" required>
+
+                <label for="genre">Genre:</label>
+                <input type="text" id="genre" name="genre" required>
+
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country" required>
+
+                <label for="age">Age:</label>
+                <input type="text" id="age" name="age" required>
+
+                <label for="lyric">Lyrics:</label>
+                <textarea id="lyric" name="lyric" required></textarea>
+
+                <label for="is_limited">Is Limited:</label>
+                <input type="checkbox" id="is_limited" name="is_limited">
+
+                <label for="audio_file">Audio File:</label>
+                <input type="file" id="audio_file" name="audio_file" accept="audio/*" required>
+
+                <button type="submit">Add Song</button>
+            </form>
+
+            <h2>Your Songs</h2>
+            <div id="songsList"></div>
+        </div>
+    </div>
+    <script src="../js/home.js"></script>
+    <script src="../js/addsong.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,126 @@
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+form input[type="text"],
+form input[type="file"],
+form input[type="checkbox"],
+form textarea {
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+}
+
+form input[type="text"],
+form input[type="file"],
+form input[type="checkbox"] {
+    background-color: #333333;
+    color: #FFFFFF;
+    max-width: 400px;
+}
+
+form textarea {
+    background-color: #333333;
+    color: #FFFFFF;
+    height: 100px;
+    resize: both;
+}
+
+form button {
+    padding: 15px;
+    font-size: 18px;
+    color: #FFFFFF;
+    background-color: #1DB954;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #1AA34A;
+}
+
+.content h2 {
+    margin-top: 30px;
+}
+
+#is_limited {
+    position: relative;
+    bottom: 27px;
+    right: 30px;
+}
+
+#songsList {
+    margin-top: 40px;
+}
+
+.song-item {
+    background-color: #282828;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.song-item:hover {
+    transform: translateY(-5px);
+}
+
+.song-item h3 {
+    padding-bottom: 7px;
+    font-size: 24px;
+    color: #1DB954;
+}
+
+.song-controls {
+    display: flex;
+    align-items: center;
+}
+
+#btns i {
+    font-size: 1.5em;
+    margin: 0 10px;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+
+audio {
+    display: none;
+}
+
+input[type="range"] {
+    width: 200px;
+    height: 2px;
+    appearance: none;
+    background-color: rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: white;
+}
+
+.start,
+.end {
+    padding: 0 10px;
+}
+
+.play-btn {
+    cursor: pointer;
+}

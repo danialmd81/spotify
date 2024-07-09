@@ -45,7 +45,6 @@ CREATE TABLE Songs (
     SongID INT PRIMARY KEY auto_increment,
     name VARCHAR(255) NOT NULL,
     ArtistID INT,
-    Album_Title VARCHAR(255),
     genre VARCHAR(255) NOT NULL,
     country VARCHAR(255) NOT NULL,
     age VARCHAR(255) NOT NULL,
