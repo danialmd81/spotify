@@ -33,7 +33,7 @@ CREATE TABLE Album (
     FOREIGN KEY (ArtistID) REFERENCES Artist (ArtistID) ON DELETE CASCADE
 );
 
-CREATE Table Albums - Songs (
+CREATE Table Albums_Songs (
     SongID INT,
     Album_Title VARCHAR(255),
     PRIMARY KEY (SongID, Album_Title),
