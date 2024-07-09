@@ -3,6 +3,7 @@ const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
+const multer = require('multer');
 
 const app = express();
 app.use(express.json());
@@ -32,6 +33,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/style', express.static(path.join(__dirname, 'style')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 
+
+// const upload = multer({
+//     storage: multer.memoryStorage(),
+//     limits: { fileSize: 100 * 1024 * 1024 * 1024 }
+// });
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'login.html'));
@@ -252,6 +260,81 @@ app.get('/addToPremium', (req, res) => {
 
 // buy premium account
 
+
+// add song
+app.get('/AddSong', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'addsong.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/addSong', upload.single('audio_file'), (req, res) => {
+    const { name, album, genre, country, age, lyric, is_limited } = req.body;
+    const isLimitedAsInt = is_limited ? 1 : 0;
+
+    const audio_file = req.file.buffer;
+
+    db.query('SELECT * FROM users WHERE username = ?', [req.session.username], (err, userResults) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error retrieving user information');
+        }
+        if (userResults.length > 0) {
+            const artistId = userResults[0].UserID;
+
+            const query = 'INSERT INTO Songs (name, ArtistID, genre, country, age, lyric, is_limited, audio_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+            db.query(query, [name, artistId, genre, country, age, lyric, isLimitedAsInt, audio_file], (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Error adding song');
+                }
+                res.send('Song added successfully');
+            });
+        } else {
+            res.status(404).send('User not found');
+        }
+    });
+});
+
+
+app.get('/getSongs', (req, res) => {
+    if (req.session.loggedin) {
+
+
+
+        db.query('SELECT * FROM users WHERE username = ?', [req.session.username], (err, userResults) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error retrieving user information');
+            }
+            if (userResults.length > 0) {
+                const artistId = userResults[0].UserID;
+
+                const query = 'SELECT * FROM Songs WHERE ArtistID = ?';
+                db.query(query, [artistId], (err, results) => {
+                    if (err) {
+                        console.error(err);
+                        return res.status(500).send('Error fetching songs');
+                    }
+                    const songs = results.map(row => ({
+                        name: row.name,
+                        audio_file: row.audio_file.toString('base64')
+                    }));
+                    res.json(songs);
+                });
+            } else {
+                res.status(404).send('User not found');
+            }
+        });
+
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+//add song
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

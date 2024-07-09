@@ -37,7 +37,6 @@ CREATE TABLE Songs (
     SongID INT PRIMARY KEY auto_increment,
     name VARCHAR(255) NOT NULL,
     ArtistID INT,
-    Album_Title VARCHAR(255),
     genre VARCHAR(255) NOT NULL,
     country VARCHAR(255) NOT NULL,
     age VARCHAR(255) NOT NULL,
@@ -45,7 +44,6 @@ CREATE TABLE Songs (
     is_limited BOOLEAN DEFAULT FALSE,
     audio_file LONGBLOB,
     Foreign Key (ArtistID) REFERENCES Artist (ArtistID) on DELETE CASCADE,
-    Foreign Key (Album_Title) REFERENCES Album (Title) on DELETE CASCADE
 );
 
 CREATE TABLE Playlists (
