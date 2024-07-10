@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const menus = {
                 artist: ['Home', 'Songs', 'Friends', 'Followers', 'Concert', 'Wallet', 'My Songs', 'Add Song', 'Add Album', 'Add Playlist', 'Create Playlist', 'Delete Song', 'Delete Album'],
                 premium: ['Home', 'Songs', 'Friends', 'Followers', 'Concert', 'Wallet', 'Playlist', 'Favorite Song', 'Favorite artist'],
-                normal: ['Home', 'Songs', 'Wallet', 'Buy Premium Account', 'Favorite Song', 'Favorite artist']
+                normal: ['Home', 'Songs', 'Wallet', 'Buy Premium Account']
             };
 
             const userMenu = menus[userType];

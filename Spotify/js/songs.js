@@ -1,4 +1,3 @@
-// home.js
 async function loadSongs() {
     const response = await fetch('/getAllSongs');
     const songs = await response.json();
