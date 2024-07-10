@@ -74,6 +74,7 @@ CREATE Table Concert (
     ConcertID INT PRIMARY KEY auto_increment,
     ArtistID INT,
     Price INT,
+    country VARCHAR(255),
     Foreign Key (ArtistID) REFERENCES Artist (ArtistID) ON DELETE CASCADE
 );
 
