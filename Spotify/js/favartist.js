@@ -1,26 +1,26 @@
-document.getElementById('showSongsBtn').addEventListener('click', () => {
-    fetch('/getNonFavSongs')
+document.getElementById('showArtistsBtn').addEventListener('click', () => {
+    fetch('/getNonFavArtist')
         .then(response => response.json())
         .then(data => {
-            const table = document.getElementById('songsTable');
+            const table = document.getElementById('artistsTable');
             const tbody = table.querySelector('tbody');
             tbody.innerHTML = '';
 
-            data.nonFavSongs.forEach(song => {
+            data.nonFavArtists.forEach(artist => {
                 const tr = document.createElement('tr');
-                const tdSongname = document.createElement('td');
-                tdSongname.textContent = song.name;
+                const tdArtistname = document.createElement('td');
+                tdArtistname.textContent = artist.name;
 
                 const tdAction = document.createElement('td');
                 const addFavBtn = document.createElement('button');
                 addFavBtn.textContent = 'Add To Favorite';
                 addFavBtn.addEventListener('click', () => {
-                    fetch(`/favUserSong/${song.SongID}`, { method: 'POST' })
+                    fetch(`/favUserArtist/${artist.ArtistID}`, { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 tr.remove();
-                                loadSongs();
+                                loadArtists();
                             } else {
                                 alert('Failed');
                             }
@@ -28,7 +28,7 @@ document.getElementById('showSongsBtn').addEventListener('click', () => {
                 });
                 tdAction.appendChild(addFavBtn);
 
-                tr.appendChild(tdSongname);
+                tr.appendChild(tdArtistname);
                 tr.appendChild(tdAction);
                 tbody.appendChild(tr);
             });
@@ -37,27 +37,27 @@ document.getElementById('showSongsBtn').addEventListener('click', () => {
         });
 });
 
-function loadSongs() {
-    fetch('/getAllSongs')
+function loadArtists() {
+    fetch('/getAllArtists')
         .then(response => response.json())
         .then(data => {
-            const followersList = document.getElementById('songsList');
-            followersList.innerHTML = '';
+            const artistList = document.getElementById('artistsList');
+            artistList.innerHTML = '';
 
-            data.allSongs.forEach(song => {
+            data.allArtists.forEach(artist => {
                 const li = document.createElement('li');
-                li.textContent = song.name;
+                li.textContent = artist.name;
 
                 const removeFavBtn = document.createElement('button');
                 removeFavBtn.textContent = 'Remove From Favorite';
                 removeFavBtn.classList.add("removeFavBtn");
                 removeFavBtn.addEventListener('click', () => {
-                    fetch(`/notFavUserSong/${song.SongID}`, { method: 'POST' })
+                    fetch(`/notFavUserArtist/${artist.ArID}`, { method: 'POST' })
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
                                 li.remove();
-                                loadSongs();
+                                loadArtists();
                             } else {
                                 alert('Failed');
                             }
@@ -65,9 +65,9 @@ function loadSongs() {
                 });
 
                 li.appendChild(removeFavBtn);
-                followersList.appendChild(li);
+                artistList.appendChild(li);
             });
         });
 }
 
-loadSongs();
+loadArtists();

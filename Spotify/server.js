@@ -506,6 +506,78 @@ app.post('/notFavUserSong/:id', (req, res) => {
 
 // favorite songs
 
+
+// favorite artist
+app.get('/Favoriteartist', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'favartist.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getNonFavArtist', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const query = `
+            SELECT * FROM Artist WHERE ArtistID NOT IN (
+                SELECT ArID FROM Favorite_Artist WHERE PrID = ?
+            ) 
+        `;
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            res.json({ nonFavArtists: results });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/favUserArtist/:id', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const artistId = req.params.id;
+        const query = `INSERT INTO Favorite_Artist (PrID, ArID) VALUES (?, ?)`;
+
+        db.query(query, [userId, artistId], (err, result) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+
+app.get('/getAllArtists', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const query = `
+            SELECT F.ArID, A.name FROM Favorite_Artist F
+            JOIN Artist A ON F.ArID = A.ArtistID
+            WHERE F.PrID = ?
+        `;
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            res.json({ allArtists: results });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/notFavUserArtist/:id', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const artistId = req.params.id;
+        const query = `DELETE FROM Favorite_Artist WHERE PrID = ? AND ArID = ?`;
+
+        db.query(query, [userId, artistId], (err, result) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+
+// favorite artist
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
