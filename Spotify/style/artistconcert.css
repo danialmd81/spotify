@@ -1,0 +1,104 @@
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+ul {
+    list-style-type: none;
+}
+
+form label {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+form input[type="text"] {
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+}
+
+form input[type="text"] {
+    background-color: #333333;
+    color: #FFFFFF;
+    max-width: 400px;
+}
+
+
+form button {
+    padding: 15px;
+    font-size: 18px;
+    color: #FFFFFF;
+    background-color: #1DB954;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #1AA34A;
+}
+
+button {
+    margin-top: 30px;
+    padding: 15px;
+    font-size: 18px;
+    color: #FFFFFF;
+    background-color: #1DB954;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #1AA34A;
+}
+
+
+ul {
+    list-style-type: none;
+}
+
+button:hover {
+    background-color: #14833b;
+}
+
+.content h2 {
+    margin-top: 80px;
+}
+
+
+.hidden {
+    display: none;
+}
+
+#concertList {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+}
+
+#concertList li {
+    font-size: 1.3rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 10px;
+}
+
+li p {
+    margin: 0;
+}
+
+li button {
+    margin: 0;
+}
+
+.removeBtn {
+    margin-left: 50px;
+}

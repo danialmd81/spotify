@@ -1,0 +1,39 @@
+section {
+    width: 100%;
+    margin-bottom: 30px;
+}
+
+.content ul {
+    list-style: none;
+    width: 100%;
+    padding: 0;
+}
+
+.content li {
+    background-color: #282828;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background-color 0.3s;
+}
+
+.content li:hover {
+    background-color: #333;
+}
+
+button {
+    background-color: #1db954;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #14833b;
+}
