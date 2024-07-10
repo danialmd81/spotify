@@ -377,19 +377,46 @@ app.get('/getSongs', (req, res) => {
 
 // my songs
 
-// songs
 
-app.get('/Songs', (req, res) => {
-    if (req.session.loggedin) {
-        res.sendFile(path.join(__dirname, 'public', 'songs.html'));
+// songs noraml user
+
+app.get('/getAllNormalSongs', (req, res) => {
+    if (req.session.userId) {
+        const query = 'SELECT * FROM Songs';
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching songs');
+            }
+            const songs = results.map(row => ({
+                name: row.name,
+                audio_file: row.audio_file.toString('base64')
+            }));
+            res.json(songs);
+        });
     } else {
-        res.redirect('/');
+        res.status(401).send('User not logged in');
     }
+
 });
 
+// songs noraml user
+
+// songs premium user
+
 app.get('/Songs', (req, res) => {
     if (req.session.loggedin) {
-        res.sendFile(path.join(__dirname, 'public', 'songs.html'));
+        const userId = req.session.userId;
+        const query = 'SELECT COUNT(*) AS count FROM premiumusers WHERE PremiumID = ?';
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            if (results[0].count > 0) {
+                res.sendFile(path.join(__dirname, 'public', 'songs.html'));
+            }
+            else {
+                res.sendFile(path.join(__dirname, 'public', 'songsnormaluser.html'));
+            }
+        });
     } else {
         res.redirect('/');
     }
@@ -469,6 +496,7 @@ app.post('/addComment', (req, res) => {
         res.send('Comment added!');
     });
 });
+// songs premium user
 
 // follwers
 
