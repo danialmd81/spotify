@@ -1,5 +1,5 @@
 async function loadSongs() {
-    const response = await fetch('/getAllFavSongs');
+    const response = await fetch('/getSongs');
     const songs = await response.json();
     const songsList = document.getElementById('songsList');
     songsList.innerHTML = '';
@@ -13,7 +13,6 @@ async function loadSongs() {
                 <input class="music-time" type="range" value="0">
                 <span class="end">00:00</span>
                 <i class="fas fa-play play-btn"></i>
-                <i class="fas fa-trash delete-btn"></i>
                 <audio controls>
                     <source src="data:audio/*;base64,${song.audio_file}" type="audio/mpeg">
                     Your browser does not support the audio element.
@@ -24,7 +23,6 @@ async function loadSongs() {
 
         const audio = songElement.querySelector('audio');
         const playBtn = songElement.querySelector('.play-btn');
-        const deleteBtn = songElement.querySelector('.delete-btn');
         const range = songElement.querySelector('.music-time');
         const startTime = songElement.querySelector('.start');
         const endTime = songElement.querySelector('.end');
@@ -58,24 +56,8 @@ async function loadSongs() {
                 playBtn.classList.replace('fa-pause', 'fa-play');
             }
         });
-
-        deleteBtn.addEventListener('click', async () => {
-            const songName = song.name;
-            const response = await fetch('/deleteSong', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ name: songName })
-            });
-
-            if (response.ok) {
-                loadSongs(); // Reload songs after deletion
-            } else {
-                console.error('Error deleting song');
-            }
-        });
     });
 }
 
-document.addEventListener("DOMContentLoaded", loadSongs);
+
+document.querySelector(".showsongs").addEventListener("click", loadSongs);
