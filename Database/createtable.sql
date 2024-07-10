@@ -33,27 +33,25 @@ CREATE TABLE Album (
     FOREIGN KEY (ArtistID) REFERENCES Artist (ArtistID) ON DELETE CASCADE
 );
 
--- CREATE Table Albums_Songs (
---     SongID INT,
---     Album_Title VARCHAR(255),
---     PRIMARY KEY (SongID, Album_Title),
---     Foreign Key (SongID) REFERENCES Songs (SongID) on DELETE CASCADE,
---     Foreign Key (Album_Title) REFERENCES Album (Title) on DELETE CASCADE
--- )
+CREATE Table Albums_Songs (
+    SongID INT,
+    Album_Title VARCHAR(255),
+    PRIMARY KEY (SongID, Album_Title),
+    Foreign Key (SongID) REFERENCES Songs (SongID) on DELETE CASCADE,
+    Foreign Key (Album_Title) REFERENCES Album (Title) on DELETE CASCADE
+)
 
 CREATE TABLE Songs (
     SongID INT PRIMARY KEY auto_increment,
-    name VARCHAR(255) NOT NULL,
     ArtistID INT,
-    Album_Title VARCHAR(255) NULL,
+    name VARCHAR(255) NOT NULL,
     genre VARCHAR(255) NOT NULL,
     country VARCHAR(255) NOT NULL,
     age VARCHAR(255) NOT NULL,
     lyric VARCHAR(1024) NOT NULL,
     is_limited BOOLEAN DEFAULT FALSE,
     audio_file LONGBLOB,
-    Foreign Key (ArtistID) REFERENCES Artist (ArtistID) on DELETE CASCADE,
-    Foreign Key (Album_Title) REFERENCES Album (Title) on DELETE CASCADE
+    Foreign Key (ArtistID) REFERENCES Artist (ArtistID) on DELETE CASCADE
 );
 
 CREATE TABLE Playlists (
@@ -113,47 +111,39 @@ CREATE TABLE Followers (
 CREATE Table Comments (
     ID INT PRIMARY KEY auto_increment,
     PrID INT,
-    PID INT,
-    SID INT,
-    AID INT,
+    PID INT NULL,
+    SID INT NULL,
+    ATitle VARCHAR(255) NULL,
     Comment VARCHAR(1024),
     Foreign Key (PrID) REFERENCES PremiumUsers (PremiumID) on DELETE CASCADE,
     Foreign Key (PID) REFERENCES Playlists (PlaylistID) on DELETE CASCADE,
     Foreign Key (SID) REFERENCES Songs (SongID) on DELETE CASCADE,
-    Foreign Key (AID) REFERENCES Artist (ArtistID) on DELETE CASCADE
+    Foreign Key (ATitle) REFERENCES Album (Title) on DELETE CASCADE
 );
 
 CREATE Table Likes (
     ID INT PRIMARY KEY auto_increment,
     PrID INT,
-    PID INT,
-    SID INT,
-    AID INT,
+    PID INT NULL,
+    SID INT NULL,
+    ATitle VARCHAR(255) NULL,
     Foreign Key (PrID) REFERENCES PremiumUsers (PremiumID) on DELETE CASCADE,
     Foreign Key (PID) REFERENCES Playlists (PlaylistID) on DELETE CASCADE,
     Foreign Key (SID) REFERENCES Songs (SongID) on DELETE CASCADE,
-    Foreign Key (AID) REFERENCES Artist (ArtistID) on DELETE CASCADE
+    Foreign Key (ATitle) REFERENCES Album (Title) on DELETE CASCADE
 );
 
 CREATE Table Favorite (
     ID INT PRIMARY KEY auto_increment,
     PrID INT,
-    PID INT,
-    SID INT,
-    AID INT,
+    PID INT NULL,
+    SID INT NULL,
+    ATitle VARCHAR(255) NULL,
     Foreign Key (PrID) REFERENCES PremiumUsers (PremiumID) on DELETE CASCADE,
     Foreign Key (PID) REFERENCES Playlists (PlaylistID) on DELETE CASCADE,
     Foreign Key (SID) REFERENCES Songs (SongID) on DELETE CASCADE,
-    Foreign Key (AID) REFERENCES Artist (ArtistID) on DELETE CASCADE
+    Foreign Key (ATitle) REFERENCES Album (Title) on DELETE CASCADE
 );
-
-CREATE Table Favorite_Song (
-    ID INT PRIMARY KEY auto_increment,
-    PrID INT,
-    SID INT,
-    Foreign Key (PrID) REFERENCES PremiumUsers (PremiumID) on DELETE CASCADE,
-    Foreign Key (SID) REFERENCES Songs (SongID) on DELETE CASCADE
-)
 
 CREATE Table Favorite_Artist (
     PrID INT,
