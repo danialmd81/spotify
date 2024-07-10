@@ -88,6 +88,14 @@ app.post('/register', (req, res) => {
                             db.query('INSERT INTO artist (ArtistID, name) VALUES (?,?)',
                                 [userId, username], (err, results) => {
                                     if (err) throw err;
+                                });
+                            db.query('UPDATE users set is_premium = 1 where UserId = ?',
+                                [userId], (err, results) => {
+                                    if (err) throw err;
+                                });
+                            db.query('INSERT INTO PremiumUsers (PremiumID) VALUES (?)',
+                                [userId], (err, results) => {
+                                    if (err) throw err;
                                     res.redirect('/home');
                                 });
                         } else {
@@ -297,6 +305,46 @@ app.post('/addSong', upload.single('audio_file'), (req, res) => {
 });
 
 
+//add song
+
+// delete song
+app.get('/DeleteSong', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'deletesong.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/deletesongartist', upload.none(), (req, res) => {
+    if (req.session.loggedin) {
+        const songname = req.body.name;
+        const query = `
+            DELETE FROM songs WHERE name = ?
+        `;
+        db.query(query, [songname], (err, results) => {
+            if (err) throw err;
+            res.send('Song removed successfully');
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+
+
+// delete song
+
+// songs
+
+app.get('/Songs', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'songs.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
 app.get('/getSongs', (req, res) => {
     if (req.session.loggedin) {
         db.query('SELECT * FROM users WHERE username = ?', [req.session.username], (err, userResults) => {
@@ -329,35 +377,7 @@ app.get('/getSongs', (req, res) => {
     }
 });
 
-//add song
-
-// delete song
-app.get('/DeleteSong', (req, res) => {
-    if (req.session.loggedin) {
-        res.sendFile(path.join(__dirname, 'public', 'deletesong.html'));
-    } else {
-        res.redirect('/');
-    }
-});
-
-app.post('/deletesongartist', upload.none(), (req, res) => {
-    if (req.session.loggedin) {
-        const songname = req.body.name;
-        const query = `
-            DELETE FROM songs WHERE name = ?
-        `;
-        db.query(query, [songname], (err, results) => {
-            if (err) throw err;
-            res.send('Song removed successfully');
-        });
-    } else {
-        res.redirect('/');
-    }
-});
-
-
-
-// delete song
+// songs
 
 // follwers
 
@@ -577,6 +597,232 @@ app.post('/notFavUserArtist/:id', (req, res) => {
 });
 
 // favorite artist
+
+// concert 
+app.get('/Concert', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const query = 'SELECT COUNT(*) AS count FROM artist WHERE ArtistID = ?';
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            if (results[0].count > 0) {
+                res.sendFile(path.join(__dirname, 'public', 'artistconcert.html'));
+            }
+            else {
+                res.sendFile(path.join(__dirname, 'public', 'userconcert.html'));
+            }
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+// artist concert
+app.post('/addConcert', upload.none(), (req, res) => {
+    if (req.session.loggedin) {
+        const { country, price } = req.body;
+        const userId = req.session.userId;
+
+        // Insert new concert into Concert table
+        db.query('INSERT INTO Concert (ArtistID, Price, country) VALUES (?, ?, ?)', [userId, price, country], (err, results) => {
+            if (err) {
+                console.error('Insert concert error:', err);
+                res.status(500).send('Internal server error');
+                return;
+            }
+
+            // Get the ConcertID of the newly inserted concert
+            const concertId = results.insertId;
+
+            // Insert new ticket into Concert_Ticket table
+            db.query('INSERT INTO Concert_Ticket (ConcertID, isValid) VALUES (?, TRUE)', [concertId], (err, results) => {
+                if (err) {
+                    console.error('Insert ticket error:', err);
+                    res.status(500).send('Internal server error');
+                    return;
+                }
+
+                res.send('Concert and ticket added successfully');
+            });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+
+app.get('/getConcerts', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+        const query = `
+            SELECT ConcertID,ArtistID,country,Price from Concert where ArtistID = ?
+        `;
+        db.query(query, [userId], (err, results) => {
+            if (err) throw err;
+            res.json({ concerts: results });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/removeconcert/:id', (req, res) => {
+    if (req.session.loggedin) {
+        const concertId = req.params.id;
+        const query = `DELETE FROM Concert WHERE ConcertID = ?`;
+
+        db.query(query, [concertId], (err, result) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+// artist concert
+
+// user concert
+
+app.get('/userconcerts', (req, res) => {
+    const query = `
+        SELECT Concert.ConcertID as id, Artist.name as artist, Concert.Price as price,Concert.country
+        FROM Concert 
+        JOIN Artist ON Concert.ArtistID = Artist.ArtistID;
+    `;
+
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).send('Internal server error');
+            return;
+        }
+        res.json({ concerts: results });
+    });
+});
+
+app.get('/userreserved', (req, res) => {
+    const userId = req.session.userId;
+
+    const query = `
+        SELECT Concert.ConcertID as id, Artist.name as artist, Concert.Country as country,Concert.Price as price 
+        FROM User_Ticket 
+        JOIN Concert_Ticket ON User_Ticket.TID = Concert_Ticket.TicketID 
+        JOIN Concert ON Concert_Ticket.ConcertID = Concert.ConcertID 
+        JOIN Artist ON Concert.ArtistID = Artist.ArtistID 
+        WHERE User_Ticket.PrID = ?;
+    `;
+
+    db.query(query, [userId], (err, results) => {
+        if (err) {
+            res.status(500).send('Internal server error');
+            return;
+        }
+        res.json({ reserved: results });
+    });
+});
+
+app.post('/userreserve', (req, res) => {
+    const userId = req.session.userId;
+    const { concertId, price } = req.body;
+
+    const getUserQuery = 'SELECT wallet FROM Users WHERE UserID = ?';
+    const reserveTicketQuery = `
+        INSERT INTO User_Ticket (PrID, TID)
+        SELECT ?, TicketID FROM Concert_Ticket WHERE ConcertID = ? AND isValid = TRUE LIMIT 1;
+    `;
+    const updateUserWalletQuery = 'UPDATE Users SET wallet = wallet - ? WHERE UserID = ?';
+
+    db.beginTransaction(err => {
+        if (err) {
+            console.error('Transaction error:', err);
+            res.status(500).send('Internal server error');
+            return;
+        }
+
+        db.query(getUserQuery, [userId], (err, results) => {
+            if (err || results.length === 0 || results[0].wallet < price) {
+                db.rollback();
+                res.json({ success: false, message: 'Insufficient funds or user not found' });
+                return;
+            }
+
+            db.query(reserveTicketQuery, [userId, concertId], (err, results) => {
+                if (err || results.affectedRows === 0) {
+                    db.rollback();
+                    res.json({ success: false, message: 'Failed to reserve concert' });
+                    return;
+                }
+
+                db.query(updateUserWalletQuery, [price, userId], (err) => {
+                    if (err) {
+                        db.rollback();
+                        res.json({ success: false, message: 'Failed to update wallet' });
+                        return;
+                    }
+
+                    db.commit(err => {
+                        if (err) {
+                            db.rollback();
+                            res.json({ success: false, message: 'Transaction commit failed' });
+                            return;
+                        }
+
+                        res.json({ success: true });
+                    });
+                });
+            });
+        });
+    });
+});
+
+app.post('/userremove', (req, res) => {
+    const userId = req.session.userId;
+    const { concertId, price } = req.body;
+
+    const deleteReservationQuery = `
+        DELETE FROM User_Ticket 
+        WHERE PrID = ? AND TID IN (SELECT TicketID FROM Concert_Ticket WHERE ConcertID = ?);
+    `;
+    const updateUserWalletQuery = 'UPDATE Users SET wallet = wallet + ? WHERE UserID = ?';
+    console.log(userId);
+    console.log(price);
+
+    db.beginTransaction(err => {
+        if (err) {
+            console.error('Transaction error:', err);
+            res.status(500).send('Internal server error');
+            return;
+        }
+
+        db.query(deleteReservationQuery, [userId, concertId], (err, results) => {
+            if (err || results.affectedRows === 0) {
+                db.rollback();
+                res.json({ success: false, message: 'Failed to remove reservation' });
+                return;
+            }
+
+            db.query(updateUserWalletQuery, [price, userId], (err) => {
+                if (err) {
+                    db.rollback();
+                    res.json({ success: false, message: 'Failed to update wallet' });
+                    return;
+                }
+
+                db.commit(err => {
+                    if (err) {
+                        db.rollback();
+                        res.json({ success: false, message: 'Transaction commit failed' });
+                        return;
+                    }
+
+                    res.json({ success: true });
+                });
+            });
+        });
+    });
+});
+
+
+// user concert
+
+// concert
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

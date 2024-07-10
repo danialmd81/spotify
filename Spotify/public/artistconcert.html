@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spotify</title>
+    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../style/artistconcert.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <ul id="menu"></ul>
+        </div>
+        <div class="content">
+            <h1>Add a New Concert</h1>
+            <form id="addConcertForm">
+                <label for="country">Country:</label>
+                <input type="text" id="country" name="country" required>
+
+                <label for="price">Price:</label>
+                <input type="text" id="price" name="price">
+
+                <button type="submit">Add Concert</button>
+            </form>
+            <h2>Your Concerts</h2>
+            <ul id="concertList"></ul>
+        </div>
+
+        <!-- <div id="concertList"></div> -->
+    </div>
+    <script src="../js/home.js"></script>
+    <script src="../js/artistconcert.js"></script>
+</body>
+
+</html>
