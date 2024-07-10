@@ -331,15 +331,13 @@ app.post('/deletesongartist', upload.none(), (req, res) => {
     }
 });
 
-
-
 // delete song
 
-// songs
+// my songs
 
-app.get('/Songs', (req, res) => {
+app.get('/MySongs', (req, res) => {
     if (req.session.loggedin) {
-        res.sendFile(path.join(__dirname, 'public', 'songs.html'));
+        res.sendFile(path.join(__dirname, 'public', 'mysongs.html'));
     } else {
         res.redirect('/');
     }
@@ -377,7 +375,100 @@ app.get('/getSongs', (req, res) => {
     }
 });
 
+// my songs
+
 // songs
+
+app.get('/Songs', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'songs.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/Songs', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'songs.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getAllSongs', (req, res) => {
+    if (req.session.userId) {
+        const query = `
+            SELECT 
+                s.SongID AS id, s.name AS song_name, 
+                TO_BASE64(s.audio_file) AS audio_file, 
+                a.name AS artist_name,
+                c.Comment AS comment, 
+                c.PrID AS commenterId,
+                u.username AS commenter_name
+            FROM Songs s
+            JOIN Artist a ON s.ArtistID = a.ArtistID
+            LEFT JOIN Comments c ON s.SongID = c.SID
+            LEFT JOIN Users u ON c.PrID = u.UserID
+        `;
+
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching songs');
+            }
+
+            const songsMap = results.reduce((acc, row) => {
+                if (!acc[row.id]) {
+                    acc[row.id] = {
+                        id: row.id,
+                        name: row.song_name,
+                        artist_name: row.artist_name,
+                        audio_file: row.audio_file,
+                        comments: []
+                    };
+                }
+                if (row.comment) {
+                    acc[row.id].comments.push({ commenterId: row.commenterId, commenterName: row.commenter_name, text: row.comment });
+                }
+                return acc;
+            }, {});
+
+            res.json(Object.values(songsMap));
+        });
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+app.post('/likeSong', (req, res) => {
+    const { songId } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Likes (PrID, SID) VALUES (?, ?)';
+    db.query(sql, [userId, songId], (err, result) => {
+        if (err) throw err;
+        res.send('Song liked!');
+    });
+});
+
+app.post('/addToFavorite', (req, res) => {
+    const { songId } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Favorite (PrID, SID) VALUES (?, ?)';
+    db.query(sql, [userId, songId], (err, result) => {
+        if (err) throw err;
+        res.send('Song added to favorites!');
+    });
+});
+
+app.post('/addComment', (req, res) => {
+    const { songId, comment } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Comments (PrID, SID, Comment) VALUES (?, ?, ?)';
+    db.query(sql, [userId, songId, comment], (err, result) => {
+        if (err) throw err;
+        res.send('Comment added!');
+    });
+});
 
 // follwers
 
@@ -463,64 +554,54 @@ app.get('/FavoriteSong', (req, res) => {
     }
 });
 
-app.get('/getNonFavSongs', (req, res) => {
+app.get('/getAllFavSongs', (req, res) => {
     if (req.session.loggedin) {
         const userId = req.session.userId;
         const query = `
-            SELECT * FROM Songs WHERE SongID NOT IN (
-                SELECT SID FROM Favorite_Song WHERE PrID = ?
-            ) 
-        `;
+                    SELECT Songs.name, Songs.audio_file 
+                    FROM Favorite 
+                    JOIN Songs ON Favorite.SID = Songs.SongID 
+                    WHERE Favorite.PrID = ?`;
         db.query(query, [userId], (err, results) => {
-            if (err) throw err;
-            res.json({ nonFavSongs: results });
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching songs');
+            }
+            const songs = results.map(row => ({
+                name: row.name,
+                audio_file: row.audio_file.toString('base64')
+            }));
+            res.json(songs);
         });
     } else {
-        res.redirect('/');
+        res.status(401).send('User not logged in');
     }
 });
 
-app.post('/favUserSong/:id', (req, res) => {
+app.delete('/deleteSong', (req, res) => {
     if (req.session.loggedin) {
-        const userId = req.session.userId;
-        const songId = req.params.id;
-        const query = `INSERT INTO Favorite_Song (PrID, SID) VALUES (?, ?)`;
+        const songName = req.body.name;
 
-        db.query(query, [userId, songId], (err, result) => {
-            if (err) throw err;
-            res.json({ success: true });
-        });
-    }
-});
+        db.query(`
+            DELETE Favorite 
+            FROM Favorite 
+            JOIN Songs ON Favorite.SID = Songs.SongID 
+            WHERE Songs.name = ? AND Favorite.PrID = ?`,
+            [songName, req.session.userId], (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Error deleting song');
+                }
 
-
-app.get('/getAllSongs', (req, res) => {
-    if (req.session.loggedin) {
-        const userId = req.session.userId;
-        const query = `
-            SELECT S.SongID, S.name FROM Songs S
-            JOIN Favorite_Song F ON F.SID = S.SongID
-            WHERE F.PrID = ?
-        `;
-        db.query(query, [userId], (err, results) => {
-            if (err) throw err;
-            res.json({ allSongs: results });
-        });
+                if (result.affectedRows > 0) {
+                    res.status(200).send('Song deleted');
+                } else {
+                    res.status(404).send('Song not found');
+                }
+            }
+        );
     } else {
-        res.redirect('/');
-    }
-});
-
-app.post('/notFavUserSong/:id', (req, res) => {
-    if (req.session.loggedin) {
-        const userId = req.session.userId;
-        const songId = req.params.id;
-        const query = `DELETE FROM Favorite_Song WHERE PrID = ? AND SID = ?`;
-
-        db.query(query, [userId, songId], (err, result) => {
-            if (err) throw err;
-            res.json({ success: true });
-        });
+        res.status(401).send('User not logged in');
     }
 });
 
@@ -623,7 +704,6 @@ app.post('/addConcert', upload.none(), (req, res) => {
         const { country, price } = req.body;
         const userId = req.session.userId;
 
-        // Insert new concert into Concert table
         db.query('INSERT INTO Concert (ArtistID, Price, country) VALUES (?, ?, ?)', [userId, price, country], (err, results) => {
             if (err) {
                 console.error('Insert concert error:', err);
@@ -631,10 +711,8 @@ app.post('/addConcert', upload.none(), (req, res) => {
                 return;
             }
 
-            // Get the ConcertID of the newly inserted concert
             const concertId = results.insertId;
 
-            // Insert new ticket into Concert_Ticket table
             db.query('INSERT INTO Concert_Ticket (ConcertID, isValid) VALUES (?, TRUE)', [concertId], (err, results) => {
                 if (err) {
                     console.error('Insert ticket error:', err);
