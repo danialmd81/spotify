@@ -1,0 +1,50 @@
+button {
+    background-color: #1db954;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.removeFavBtn {
+    margin-left: 10px;
+}
+
+ul {
+    list-style-type: none;
+}
+
+button:hover {
+    background-color: #14833b;
+}
+
+.content h2 {
+    margin-top: 50px;
+}
+
+table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+table,
+th,
+td {
+    border: 1px solid #1db954;
+}
+
+th,
+td {
+    padding: 10px;
+    text-align: left;
+}
+
+.hidden {
+    display: none;
+}
+
+#songsList {
+    margin-top: 30px;
+}
