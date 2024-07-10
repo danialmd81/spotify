@@ -7,6 +7,7 @@ const multer = require('multer');
 
 const app = express();
 app.use(express.json());
+app.use(bodyParser.json());
 const port = 3000;
 
 
@@ -329,6 +330,34 @@ app.get('/getSongs', (req, res) => {
 });
 
 //add song
+
+// delete song
+app.get('/DeleteSong', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'deletesong.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/deletesongartist', upload.none(), (req, res) => {
+    if (req.session.loggedin) {
+        const songname = req.body.name;
+        const query = `
+            DELETE FROM songs WHERE name = ?
+        `;
+        db.query(query, [songname], (err, results) => {
+            if (err) throw err;
+            res.send('Song removed successfully');
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+
+
+// delete song
 
 // follwers
 
