@@ -1,9 +1,9 @@
-document.getElementById('deleteSongForm').addEventListener('submit', async function (e) {
+document.getElementById('deleteAlbumForm').addEventListener('submit', async function (e) {
     e.preventDefault();
     const formData = new FormData();
     formData.append('name', document.getElementById('name').value);
 
-    const response = await fetch('/deletesongartist', {
+    const response = await fetch('/deletealbumartist', {
         method: 'POST',
         body: formData
     })

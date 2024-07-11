@@ -392,7 +392,7 @@ app.get('/getSongs', (req, res) => {
 
 app.get('/getAllNormalSongs', (req, res) => {
     if (req.session.userId) {
-        const query = 'SELECT * FROM Songs WHERE is_limited = FALSE';
+        const query = 'SELECT * FROM Songs';
         db.query(query, (err, results) => {
             if (err) {
                 console.error(err);
@@ -446,7 +446,6 @@ app.get('/getAllSongs', (req, res) => {
             JOIN Artist a ON s.ArtistID = a.ArtistID
             LEFT JOIN Comments c ON s.SongID = c.SID
             LEFT JOIN Users u ON c.PrID = u.UserID
-            WHERE s.is_limited = FALSE
         `;
 
         db.query(query, (err, results) => {
@@ -986,6 +985,78 @@ app.post('/addAlbum', upload.none(), (req, res) => {
 });
 
 // add album
+
+// delete album
+
+app.get('/DeleteAlbum', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'deletealbum.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/deletealbumartist', upload.none(), (req, res) => {
+    if (req.session.loggedin) {
+        const albumname = req.body.name;
+        // Query to find all SongIDs associated with the album
+        const findSongsQuery = `
+            SELECT SongID FROM Albums_Songs WHERE Album_Title = ?
+        `;
+
+        db.query(findSongsQuery, [albumname], (err, results) => {
+            if (err) throw err;
+
+            // Extract SongIDs
+            const songIDs = results.map(row => row.SongID);
+
+            // Query to delete from Albums_Songs
+            const deleteAlbumsSongsQuery = `
+                DELETE FROM Albums_Songs WHERE Album_Title = ?
+            `;
+
+            db.query(deleteAlbumsSongsQuery, [albumname], (err, results) => {
+                if (err) throw err;
+
+                // Query to delete songs from Songs table
+                if (songIDs.length > 0) {
+                    const deleteSongsQuery = `
+                        DELETE FROM Songs WHERE SongID IN (?)
+                    `;
+
+                    db.query(deleteSongsQuery, [songIDs], (err, results) => {
+                        if (err) throw err;
+
+                        // Query to delete from Album
+                        const deleteAlbumQuery = `
+                            DELETE FROM Album WHERE Title = ?
+                        `;
+
+                        db.query(deleteAlbumQuery, [albumname], (err, results) => {
+                            if (err) throw err;
+                            res.send('Album and associated songs removed successfully');
+                        });
+                    });
+                } else {
+                    // If there are no songs associated with the album, just delete the album
+                    const deleteAlbumQuery = `
+                        DELETE FROM Album WHERE Title = ?
+                    `;
+
+                    db.query(deleteAlbumQuery, [albumname], (err, results) => {
+                        if (err) throw err;
+                        res.send('Album removed successfully');
+                    });
+                }
+            });
+        });
+    } else {
+        res.redirect('/');
+    }
+});
+
+
+// delete album
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
