@@ -15,6 +15,7 @@ CREATE TABLE Users (
 
 CREATE TABLE PremiumUsers (
     PremiumID INT PRIMARY KEY,
+    Duration INT NULL,
     FOREIGN KEY (PremiumID) REFERENCES Users (UserID) on DELETE CASCADE
 );
 
@@ -153,3 +154,39 @@ CREATE Table Favorite_Artist (
     Foreign Key (PrID) REFERENCES PremiumUsers (PremiumID) on DELETE CASCADE,
     Foreign Key (ArID) REFERENCES Artist (ArtistID) on DELETE CASCADE
 );
+
+DELIMITER $$
+
+CREATE PROCEDURE DecreaseDuration()
+BEGIN
+    UPDATE PremiumUsers
+    SET Duration = Duration - 1
+END$$
+
+DELIMITER;
+
+-- Create an event to call the procedure every 24 hours
+CREATE EVENT DecreaseDurationEvent ON SCHEDULE EVERY 1 DAY STARTS (
+    TIMESTAMP(CURRENT_DATE) + INTERVAL 1 DAY
+) -- Starts the next day
+DO
+CALL DecreaseDuration ();
+
+DELIMITER $$
+
+CREATE TRIGGER AfterDurationDecrease
+AFTER UPDATE ON PremiumUsers
+FOR EACH ROW
+BEGIN
+    IF NEW.Duration = 0 THEN
+        -- Assuming there's a corresponding record in the Users table that can be flagged as non-premium
+        UPDATE Users
+        SET is_premium = FALSE
+        WHERE `UserID` = NEW.PremiumID;
+        
+        -- Optionally, remove the user from PremiumUsers table if that's the desired behavior
+        DELETE FROM PremiumUsers WHERE `PremiumID` = NEW.PremiumID;
+    END IF;
+END$$
+
+DELIMITER;
