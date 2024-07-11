@@ -140,7 +140,6 @@ input[type="range"]::-webkit-slider-thumb {
     justify-content: center;
     align-items: center;
     animation: fadeIn 0.3s;
-    margin-top: 200px;
 }
 
 .modal-content {
@@ -153,6 +152,7 @@ input[type="range"]::-webkit-slider-thumb {
     border-radius: 8px;
     color: white;
     animation: slideIn 0.3s;
+    margin-top: 200px;
 }
 
 .modal-content h2 {
@@ -195,6 +195,7 @@ input[type="range"]::-webkit-slider-thumb {
     border-bottom: 1px solid #444;
     cursor: pointer;
     transition: background-color 0.3s;
+    margin: 10px 0;
 }
 
 .playlist-item:hover {

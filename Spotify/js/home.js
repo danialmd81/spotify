@@ -6,8 +6,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const menu = document.getElementById('menu');
 
             const menus = {
-                artist: ['Home', 'Songs', 'Friends', 'Followers', 'Concert', 'Wallet', 'My Songs', 'My Playlist', 'Favorite Song', 'Add Song', 'Add Album', 'Delete Song', 'Delete Album', 'logout'],
-                premium: ['Home', 'Songs', 'Friends', 'Followers', 'Concert', 'Wallet', 'Favorite Song', 'Favorite artist', 'My Playlist', 'logout'],
+                artist: ['Home', 'Songs', 'Playlists', 'Friends', 'Followers', 'Concert', 'Wallet', 'My Songs', 'My Playlist', 'Favorite Song', 'Add Song', 'Add Album', 'Delete Song', 'Delete Album', 'logout'],
+                premium: ['Home', 'Songs', 'Playlists', 'Friends', 'Followers', 'Concert', 'Wallet', 'Favorite Song', 'Favorite artist', 'My Playlist', 'logout'],
                 normal: ['Home', 'Songs', 'Wallet', 'Buy Premium Account', 'logout']
             };
 

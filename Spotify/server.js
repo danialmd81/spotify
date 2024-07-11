@@ -569,7 +569,7 @@ app.post('/createPlaylist', (req, res) => {
             const addToPlaylistQuery = 'INSERT INTO Playlist_Songs (PID, SID) VALUES (?, ?)';
             db.query(addToPlaylistQuery, [playlistId, songId], (err) => {
                 if (err) throw err;
-                res.json({ success: true, playlist: { id: playlistId, name } });
+                res.json({ success: true, id: playlistId, name: name });
             });
         });
     });
@@ -1121,6 +1121,103 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
 
 // delete album
 
+// playlists
+
+app.get('/Playlists', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'playlists.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getAllPlaylists', (req, res) => {
+    if (req.session.userId) {
+        const query = `
+            SELECT 
+                p.PlaylistID AS id, p.name AS playlist_name,
+                s.SongID AS song_id, s.name AS song_name, a.name AS artist_name,
+                s.audio_file AS audio_file, -- Assuming audio_file is stored in the Songs table
+                c.Comment AS comment, c.PrID AS commenterId, u.username AS commenter_name
+            FROM Playlists p
+            LEFT JOIN Playlist_Songs ps ON p.PlaylistID = ps.PID
+            LEFT JOIN Songs s ON ps.SID = s.SongID
+            LEFT JOIN Artist a ON s.ArtistID = a.ArtistID
+            LEFT JOIN Comments c ON p.PlaylistID = c.PID
+            LEFT JOIN Users u ON c.PrID = u.UserID
+        `;
+
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching playlists');
+            }
+
+            const playlistsMap = results.reduce((acc, row) => {
+                if (!acc[row.id]) {
+                    acc[row.id] = {
+                        id: row.id,
+                        name: row.playlist_name,
+                        songs: [],
+                        comments: []
+                    };
+                }
+                if (row.song_id) {
+                    acc[row.id].songs.push({
+                        id: row.song_id,
+                        name: row.song_name,
+                        artist_name: row.artist_name,
+                        audio_file: row.audio_file ? row.audio_file.toString('base64') : null // Encoding audio file to base64
+                    });
+                }
+                if (row.comment) {
+                    acc[row.id].comments.push({
+                        commenterId: row.commenterId,
+                        commenterName: row.commenter_name,
+                        text: row.comment
+                    });
+                }
+                return acc;
+            }, {});
+
+            res.json(Object.values(playlistsMap));
+        });
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+app.post('/likePlaylist', (req, res) => {
+    const { playlistId } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Likes (PrID, PID) VALUES (?, ?)';
+    db.query(sql, [userId, playlistId], (err, result) => {
+        if (err) throw err;
+        res.send('Playlist liked!');
+    });
+});
+
+app.post('/addToFavoritePlaylist', (req, res) => {
+    const { playlistId } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Favorite (PrID, PID) VALUES (?, ?)';
+    db.query(sql, [userId, playlistId], (err, result) => {
+        if (err) throw err;
+        res.send('Playlist added to favorites!');
+    });
+});
+
+app.post('/addPlaylistComment', (req, res) => {
+    const { playlistId, comment } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Comments (PrID, PID, Comment) VALUES (?, ?, ?)';
+    db.query(sql, [userId, playlistId, comment], (err, result) => {
+        if (err) throw err;
+        res.send('Comment added!');
+    });
+});
+// playlists
+
 // my playlist
 
 app.get('/MyPlaylist', (req, res) => {
@@ -1166,7 +1263,6 @@ app.get('/getPlaylistsAndSongs', (req, res) => {
         res.status(401).send('User not logged in');
     }
 });
-
 
 // my playlist
 

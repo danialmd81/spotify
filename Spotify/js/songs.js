@@ -171,15 +171,7 @@ document.getElementById('createPlaylistBtn').addEventListener('click', async () 
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ name: newPlaylistName })
-        });
-        const playlist = await response.json();
-        await fetch('/addToPlaylist', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ playlistId: playlist.id, songId: currentSongId })
+            body: JSON.stringify({ name: newPlaylistName, songId: currentSongId })
         });
         closePlaylistModal();
     }
