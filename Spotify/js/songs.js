@@ -20,6 +20,7 @@ async function loadSongs() {
                 <div class="song-controls-btn">
                     <button class="like-btn">Like</button>
                     <button class="favorite-btn">Add to Favorite</button>
+                    <button class="playlist-btn">Add to playlist</button>
                 </div>
             </div>
             <div class="lyric-section">
