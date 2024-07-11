@@ -102,6 +102,15 @@ CREATE TABLE Friends (
     FOREIGN KEY (PremiumID) REFERENCES PremiumUsers (PremiumID) on DELETE CASCADE
 );
 
+CREATE TABLE FriendRequests (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    sender_id INT,
+    recipient_id INT,
+    status VARCHAR(255) DEFAULT 'pending',
+    FOREIGN KEY (sender_id) REFERENCES Users(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES Users(UserID) ON DELETE CASCADE
+);
+
 CREATE TABLE Followers (
     PremiumID INT,
     FollowerID INT,
