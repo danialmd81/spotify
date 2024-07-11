@@ -277,9 +277,11 @@ app.get('/AddSong', (req, res) => {
 });
 
 app.post('/addSong', upload.single('audio_file'), (req, res) => {
-    const { name, album, genre, country, age, lyric, is_limited } = req.body;
-    const isLimitedAsInt = is_limited ? 1 : 0;
-
+    const { name, genre, country, age, lyric, is_limited } = req.body;
+    let isLimitedAsInt = false;
+    if (is_limited == "true") {
+        isLimitedAsInt = true;
+    }
     const audio_file = req.file.buffer;
 
     db.query('SELECT * FROM users WHERE username = ?', [req.session.username], (err, userResults) => {
@@ -382,7 +384,7 @@ app.get('/getSongs', (req, res) => {
 
 app.get('/getAllNormalSongs', (req, res) => {
     if (req.session.userId) {
-        const query = 'SELECT * FROM Songs';
+        const query = 'SELECT * FROM Songs WHERE is_limited = FALSE';
         db.query(query, (err, results) => {
             if (err) {
                 console.error(err);
@@ -436,6 +438,7 @@ app.get('/getAllSongs', (req, res) => {
             JOIN Artist a ON s.ArtistID = a.ArtistID
             LEFT JOIN Comments c ON s.SongID = c.SID
             LEFT JOIN Users u ON c.PrID = u.UserID
+            WHERE s.is_limited = FALSE
         `;
 
         db.query(query, (err, results) => {

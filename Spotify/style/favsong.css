@@ -13,6 +13,10 @@ button:hover {
     background-color: #1AA34A;
 }
 
+h1 {
+    color: #1AA34A;
+}
+
 #songsList {
     margin-top: 40px;
 }
