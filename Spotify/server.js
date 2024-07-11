@@ -1121,6 +1121,55 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
 
 // delete album
 
+// my playlist
+
+app.get('/MyPlaylist', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'myplaylist.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getPlaylistsAndSongs', (req, res) => {
+    if (req.session.loggedin) {
+        const userId = req.session.userId;
+
+        const query = `
+            SELECT p.name AS playlistName, s.name AS songName, s.audio_file
+            FROM Playlists p
+            JOIN Playlist_Songs ps ON p.PlaylistID = ps.PID
+            JOIN Songs s ON ps.SID = s.SongID
+            JOIN PremiumUsers pu ON p.PremiumID = pu.PremiumID
+            WHERE pu.PremiumID = ?`;
+
+        db.query(query, [userId], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching playlists and songs');
+            }
+
+            const playlists = results.reduce((acc, row) => {
+                if (!acc[row.playlistName]) {
+                    acc[row.playlistName] = [];
+                }
+                acc[row.playlistName].push({
+                    name: row.songName,
+                    audio_file: row.audio_file.toString('base64')
+                });
+                return acc;
+            }, {});
+
+            res.json(playlists);
+        });
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+
+// my playlist
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
