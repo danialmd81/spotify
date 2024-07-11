@@ -1254,7 +1254,7 @@ app.get('/getAllPlaylists', (req, res) => {
                         comments: []
                     };
                 }
-                if (row.song_id) {
+                if (row.song_id && !acc[row.id].songs.some(song => song.id === row.song_id)) {
                     acc[row.id].songs.push({
                         id: row.song_id,
                         name: row.song_name,
@@ -1262,7 +1262,7 @@ app.get('/getAllPlaylists', (req, res) => {
                         audio_file: row.audio_file ? row.audio_file.toString('base64') : null
                     });
                 }
-                if (row.comment) {
+                if (row.comment && !acc[row.id].comments.some(comment => comment.commenterId === row.commenterId && comment.text === row.comment)) {
                     acc[row.id].comments.push({
                         commenterId: row.commenterId,
                         commenterName: row.commenter_name,
@@ -1358,6 +1358,124 @@ app.get('/getPlaylistsAndSongs', (req, res) => {
 
 // my playlist
 
+// friends
+
+app.get('/Friends', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'friends.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/friend-requests', (req, res) => {
+    const sql = `
+        SELECT FR.id, U.username 
+        FROM FriendRequests FR
+        JOIN Users U ON FR.sender_id = U.UserID
+        WHERE FR.recipient_id = ? AND FR.status = 'pending'
+    `;
+    db.query(sql, [req.session.userId], (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+app.get('/getfriends', (req, res) => {
+    const sql = `
+        SELECT U.username
+        FROM Friends F
+        JOIN Users U ON F.FriendID = U.UserID
+        WHERE F.PremiumID = ?
+    `;
+    db.query(sql, [req.session.userId], (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+app.get('/search-users', (req, res) => {
+    const searchQuery = req.query.query;
+    const sql = 'SELECT UserID AS id, username FROM Users WHERE username LIKE ?';
+    db.query(sql, [`%${searchQuery}%`], (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+app.post('/send-friend-request', (req, res) => {
+    const recipientId = req.body.userId;
+    const senderId = req.session.userId;
+    const sql = 'INSERT INTO FriendRequests (sender_id, recipient_id) VALUES (?, ?)';
+    db.query(sql, [senderId, recipientId], (err) => {
+        if (err) throw err;
+        res.json({ success: true });
+    });
+});
+
+app.post('/friend-requests/:id', (req, res) => {
+    const requestId = req.params.id;
+    const accept = req.body.accept;
+
+    if (accept) {
+        const updateStatusSql = 'UPDATE FriendRequests SET status = "accepted" WHERE id = ?';
+        db.query(updateStatusSql, [requestId], (err) => {
+            if (err) throw err;
+
+            const getRequestSql = 'SELECT sender_id, recipient_id FROM FriendRequests WHERE id = ?';
+            db.query(getRequestSql, [requestId], (err, result) => {
+                if (err) throw err;
+
+                const senderId = result[0].sender_id;
+                const recipientId = result[0].recipient_id;
+
+                const addFriendSql = `
+                    INSERT INTO Friends (PremiumID, FriendID)
+                    VALUES (?, ?), (?, ?)
+                `;
+                db.query(addFriendSql, [senderId, recipientId, recipientId, senderId], (err) => {
+                    if (err) throw err;
+                    res.json({ success: true });
+                });
+            });
+        });
+    } else {
+        const deleteRequestSql = 'UPDATE FriendRequests SET status = "rejected" WHERE id = ?';
+        db.query(deleteRequestSql, [requestId], (err) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    }
+});
+
+
+app.get('/accepted-requests', (req, res) => {
+    const sql = `
+        SELECT U.username
+        FROM Friends F
+        JOIN Users U ON F.FriendID = U.UserID
+        WHERE F.PremiumID = ?;
+    `;
+    db.query(sql, [req.session.userId], (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+app.get('/rejected-requests', (req, res) => {
+    const sql = `
+        SELECT U.username
+        FROM FriendRequests FR
+        JOIN Users U ON FR.sender_id = U.UserID
+        WHERE FR.recipient_id = ? AND FR.status = 'rejected';
+    `;
+    db.query(sql, [req.session.userId], (err, result) => {
+        if (err) throw err;
+        res.json(result);
+    });
+});
+
+// freinds
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

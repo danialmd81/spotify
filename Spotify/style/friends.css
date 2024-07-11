@@ -1,0 +1,106 @@
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+h2 {
+    margin: 10px 0;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+li {
+    margin-bottom: 10px;
+}
+
+a {
+    text-decoration: none;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: #1db954;
+}
+
+button {
+    background-color: #1db954;
+    color: #ffffff;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    border-radius: 10px;
+}
+
+button:hover {
+    background-color: #1ed760;
+}
+
+#friend-search input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #333333;
+    color: #ffffff;
+    border: 1px solid #555555;
+}
+
+#search-results {
+    background-color: #333333;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 100px;
+}
+
+#search-results li {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#friend-requests,
+#friends-list,
+#accepted-requests,
+#rejected-requests {
+    background-color: #1e1e1e;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+#requests-list,
+#friends-list-ul,
+#accepted-list-ul,
+#rejected-list-ul {
+    padding: 0;
+}
+
+#requests-list li,
+#friends-list-ul li,
+#accepted-list-ul li,
+#rejected-list-ul li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background-color: #333333;
+    border-radius: 5px;
+}
+
+.reject {
+    background-color: #d9534f;
+}
+
+.reject:hover {
+    background-color: #c9302c;
+}
