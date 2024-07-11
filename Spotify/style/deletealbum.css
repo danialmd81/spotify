@@ -1,0 +1,35 @@
+form {
+    margin-top: 50px;
+    display: flex;
+    flex-direction: column;
+}
+
+form label {
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+
+form input[type="text"] {
+    margin-bottom: 20px;
+    padding: 10px;
+    font-size: 16px;
+    border: none;
+    border-radius: 4px;
+    background-color: #333333;
+    color: #FFFFFF;
+    max-width: 400px;
+}
+
+form button {
+    padding: 15px;
+    font-size: 18px;
+    color: #FFFFFF;
+    background-color: #1DB954;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+form button:hover {
+    background-color: #1AA34A;
+}
