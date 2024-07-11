@@ -202,6 +202,8 @@ app.post('/wallet/take', (req, res) => {
     if (req.session.loggedin) {
         const username = req.session.username;
         const amount = parseFloat(req.body.amount);
+        const duration = req.body.duration;
+        req.session.duration = duration;
 
         db.query('SELECT wallet FROM Users WHERE username = ?', [username], (err, results) => {
             if (err) throw err;
@@ -223,6 +225,7 @@ app.post('/wallet/take', (req, res) => {
 });
 
 
+
 // wallet
 
 // buy premium account
@@ -238,6 +241,8 @@ app.get('/BuyPremiumAccount', (req, res) => {
 app.get('/addToPremium', (req, res) => {
     if (req.session.loggedin) {
         const username = req.session.username;
+        const duration = req.session.duration;
+        console.log(duration);
 
         db.query('SELECT * FROM Users WHERE username = ?', [username], (err, results) => {
             if (err) throw err;
@@ -245,7 +250,7 @@ app.get('/addToPremium', (req, res) => {
             if (results.length > 0) {
                 const userId = results[0].UserID;
 
-                db.query('INSERT INTO PremiumUsers (PremiumID) VALUES (?)', [userId], (err, results) => {
+                db.query('INSERT INTO PremiumUsers (PremiumID, Duration) VALUES (?, ?)', [userId, duration], (err, results) => {
                     if (err) throw err;
 
                     db.query('UPDATE Users SET is_premium = 1 WHERE UserID = ?', [userId], (err, results) => {
@@ -261,6 +266,7 @@ app.get('/addToPremium', (req, res) => {
         res.redirect('/');
     }
 });
+
 
 
 
@@ -999,7 +1005,6 @@ app.get('/DeleteAlbum', (req, res) => {
 app.post('/deletealbumartist', upload.none(), (req, res) => {
     if (req.session.loggedin) {
         const albumname = req.body.name;
-        // Query to find all SongIDs associated with the album
         const findSongsQuery = `
             SELECT SongID FROM Albums_Songs WHERE Album_Title = ?
         `;
@@ -1007,10 +1012,8 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
         db.query(findSongsQuery, [albumname], (err, results) => {
             if (err) throw err;
 
-            // Extract SongIDs
             const songIDs = results.map(row => row.SongID);
 
-            // Query to delete from Albums_Songs
             const deleteAlbumsSongsQuery = `
                 DELETE FROM Albums_Songs WHERE Album_Title = ?
             `;
@@ -1018,7 +1021,6 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
             db.query(deleteAlbumsSongsQuery, [albumname], (err, results) => {
                 if (err) throw err;
 
-                // Query to delete songs from Songs table
                 if (songIDs.length > 0) {
                     const deleteSongsQuery = `
                         DELETE FROM Songs WHERE SongID IN (?)
@@ -1027,7 +1029,6 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
                     db.query(deleteSongsQuery, [songIDs], (err, results) => {
                         if (err) throw err;
 
-                        // Query to delete from Album
                         const deleteAlbumQuery = `
                             DELETE FROM Album WHERE Title = ?
                         `;
@@ -1038,7 +1039,6 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
                         });
                     });
                 } else {
-                    // If there are no songs associated with the album, just delete the album
                     const deleteAlbumQuery = `
                         DELETE FROM Album WHERE Title = ?
                     `;
@@ -1054,7 +1054,6 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
         res.redirect('/');
     }
 });
-
 
 // delete album
 
