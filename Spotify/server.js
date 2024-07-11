@@ -110,6 +110,13 @@ app.post('/register', (req, res) => {
 
 // login
 
+//logout
+app.get('/logout', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+//logout
+
 // home
 
 app.get('/home', (req, res) => {
