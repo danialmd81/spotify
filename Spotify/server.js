@@ -522,6 +522,63 @@ app.post('/addComment', (req, res) => {
 });
 // songs premium user
 
+// add song to playlist
+app.get('/getUserPlaylists', (req, res) => {
+    const query = 'SELECT * FROM Playlists WHERE PremiumID = ?';
+    db.query(query, [req.session.userId], (err, results) => {
+        if (err) throw err;
+        res.json(results);
+    });
+});
+
+app.post('/addToPlaylist', (req, res) => {
+    const { playlistId, songId } = req.body;
+
+    const checkSongQuery = 'SELECT is_limited FROM Songs WHERE SongID = ?';
+    db.query(checkSongQuery, [songId], (err, results) => {
+        if (err) throw err;
+        if (results.length > 0 && results[0].is_limited) {
+            return res.json({ success: false, message: 'This song is forbidden by the artist.' });
+        }
+
+        const addToPlaylistQuery = 'INSERT INTO Playlist_Songs (PID, SID) VALUES (?, ?)';
+        db.query(addToPlaylistQuery, [playlistId, songId], (err) => {
+            if (err) throw err;
+            res.json({ success: true });
+        });
+    });
+});
+
+app.post('/createPlaylist', (req, res) => {
+    const { name, songId } = req.body;
+
+    const createPlaylistQuery = 'INSERT INTO Playlists (PremiumID, name) VALUES (?, ?)';
+    db.query(createPlaylistQuery, [req.session.userId, name], (err, results) => {
+        if (err) throw err;
+
+        const playlistId = results.insertId;
+
+        const checkSongQuery = 'SELECT is_limited FROM Songs WHERE SongID = ?';
+        db.query(checkSongQuery, [songId], (err, results) => {
+            if (err) throw err;
+
+            if (results.length > 0 && results[0].is_limited) {
+                return res.json({ success: false, message: 'This song is forbidden by the artist.', playlist: { id: playlistId, name } });
+            }
+
+            const addToPlaylistQuery = 'INSERT INTO Playlist_Songs (PID, SID) VALUES (?, ?)';
+            db.query(addToPlaylistQuery, [playlistId, songId], (err) => {
+                if (err) throw err;
+                res.json({ success: true, playlist: { id: playlistId, name } });
+            });
+        });
+    });
+});
+
+
+// add song to playlist
+
+
 // follwers
 
 app.get('/Followers', (req, res) => {
@@ -1063,6 +1120,7 @@ app.post('/deletealbumartist', upload.none(), (req, res) => {
 });
 
 // delete album
+
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

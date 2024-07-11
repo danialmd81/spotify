@@ -1,3 +1,5 @@
+let currentSongId = 0;
+
 async function loadSongs() {
     const response = await fetch('/getAllSongs');
     const songs = await response.json();
@@ -6,8 +8,8 @@ async function loadSongs() {
     songs.forEach(song => {
         const songElement = document.createElement('div');
         songElement.className = 'song-item';
-        songElement.innerHTML = `
-            <h3>${song.name} by ${song.artist_name}</h3>
+        songElement.innerHTML =
+            `<h3>${song.name} by ${song.artist_name}</h3>
             <div class="song-controls">
                 <span class="start">00:00</span>
                 <input class="music-time" type="range" value="0">
@@ -33,8 +35,7 @@ async function loadSongs() {
                 <div class="comments">
                     ${song.comments ? song.comments.map(comment => `<div class="comment"><strong>${comment.commenterName}:</strong> ${comment.text}</div>`).join('') : ''}
                 </div>
-            </div>
-        `;
+            </div>`;
         songsList.appendChild(songElement);
 
         const audio = songElement.querySelector('audio');
@@ -46,7 +47,7 @@ async function loadSongs() {
         function timeForMusic(time) {
             const minutes = Math.floor(time / 60);
             const seconds = Math.floor(time % 60);
-            return `${String(minutes).padStart(2, '0')} : ${String(seconds).padStart(2, '0')}`;
+            return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
         }
 
         audio.addEventListener('canplay', () => {
@@ -114,7 +115,75 @@ async function loadSongs() {
                 commentInput.value = '';
             }
         });
+
+        songElement.querySelector('.playlist-btn').addEventListener('click', () => {
+            openPlaylistModal(song.id);
+        });
     });
 }
 
+function openPlaylistModal(songId) {
+    const modal = document.getElementById('playlistModal');
+    currentSongId = songId;
+    modal.style.display = 'block';
+    loadPlaylists();
+}
+
+function closePlaylistModal() {
+    const modal = document.getElementById('playlistModal');
+    modal.style.display = 'none';
+}
+
+async function loadPlaylists() {
+    const response = await fetch('/getUserPlaylists');
+    const playlists = await response.json();
+    const playlistsContainer = document.getElementById('playlistsContainer');
+    playlistsContainer.innerHTML = '';
+    playlists.forEach(playlist => {
+        const playlistElement = document.createElement('div');
+        playlistElement.className = 'playlist-item';
+        playlistElement.innerHTML = `<p>${playlist.name}</p>`;
+        playlistElement.addEventListener('click', async () => {
+            const response = await fetch('/addToPlaylist', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ playlistId: playlist.PlaylistID, songId: currentSongId })
+            });
+            const result = await response.json();
+            if (result.success) {
+                alert('Song added to playlist!');
+                closePlaylistModal();
+            } else {
+                alert(result.message);
+            }
+        });
+        playlistsContainer.appendChild(playlistElement);
+    });
+}
+
+document.getElementById('createPlaylistBtn').addEventListener('click', async () => {
+    const newPlaylistName = document.getElementById('newPlaylistName').value;
+    if (newPlaylistName) {
+        const response = await fetch('/createPlaylist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name: newPlaylistName })
+        });
+        const playlist = await response.json();
+        await fetch('/addToPlaylist', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ playlistId: playlist.id, songId: currentSongId })
+        });
+        closePlaylistModal();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', loadSongs);
+document.querySelector('.close').addEventListener('click', closePlaylistModal);
