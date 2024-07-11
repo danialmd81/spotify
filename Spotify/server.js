@@ -578,6 +578,98 @@ app.post('/createPlaylist', (req, res) => {
 
 // add song to playlist
 
+// favorite playlist
+
+app.get('/FavoritePlaylist', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'favplaylist.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getAllFavPlaylists', (req, res) => {
+    if (req.session.userId) {
+        const query = `
+                SELECT 
+                    f.ID AS favorite_id,
+                    p.PlaylistID AS id, 
+                    p.name AS playlist_name,
+                    s.SongID AS song_id, 
+                    s.name AS song_name, 
+                    a.name AS artist_name,
+                    s.audio_file AS audio_file
+                FROM Favorite f
+                LEFT JOIN Playlists p ON f.PID = p.PlaylistID
+                LEFT JOIN Playlist_Songs ps ON p.PlaylistID = ps.PID
+                LEFT JOIN Songs s ON ps.SID = s.SongID
+                LEFT JOIN Artist a ON s.ArtistID = a.ArtistID
+                WHERE f.PrID = ?
+            `;
+        const userId = req.session.userId;
+
+        db.query(query, [userId], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching playlists');
+            }
+
+            const playlistsMap = results.reduce((acc, row) => {
+                if (!acc[row.id]) {
+                    acc[row.id] = {
+                        id: row.id,
+                        name: row.playlist_name,
+                        songs: [],
+                    };
+                }
+                if (row.song_id) {
+                    acc[row.id].songs.push({
+                        id: row.song_id,
+                        name: row.song_name,
+                        artist_name: row.artist_name,
+                        audio_file: row.audio_file ? row.audio_file.toString('base64') : null
+                    });
+                }
+                return acc;
+            }, {});
+
+            res.json(Object.values(playlistsMap));
+        });
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+app.delete('/deleteFavPlaylist', (req, res) => {
+    if (req.session.loggedin) {
+        const playlistname = req.body.name;
+        console.log(playlistname);
+        db.query(`
+            DELETE Favorite
+            FROM Favorite 
+            JOIN Playlists ON Favorite.PID = Playlists.PlaylistID 
+            WHERE Playlists.name = ? AND Favorite.PrID = ?`,
+            [playlistname, req.session.userId], (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Error deleting playlist');
+                }
+
+                if (result.affectedRows > 0) {
+                    res.status(200).send('playlist deleted');
+                } else {
+                    res.status(404).send('playlist not found');
+                }
+            }
+        );
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+
+// favorite playlist
+
 
 // follwers
 
@@ -687,7 +779,7 @@ app.get('/getAllFavSongs', (req, res) => {
     }
 });
 
-app.delete('/deleteSong', (req, res) => {
+app.delete('/deleteFavSong', (req, res) => {
     if (req.session.loggedin) {
         const songName = req.body.name;
 
@@ -1167,7 +1259,7 @@ app.get('/getAllPlaylists', (req, res) => {
                         id: row.song_id,
                         name: row.song_name,
                         artist_name: row.artist_name,
-                        audio_file: row.audio_file ? row.audio_file.toString('base64') : null // Encoding audio file to base64
+                        audio_file: row.audio_file ? row.audio_file.toString('base64') : null
                     });
                 }
                 if (row.comment) {
