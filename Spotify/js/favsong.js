@@ -61,7 +61,7 @@ async function loadSongs() {
 
         deleteBtn.addEventListener('click', async () => {
             const songName = song.name;
-            const response = await fetch('/deleteSong', {
+            const response = await fetch('/deleteFavSong', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
