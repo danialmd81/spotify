@@ -9,6 +9,11 @@ button {
     cursor: pointer;
 }
 
+.content h2 {
+    text-align: center;
+    margin: 20px 0;
+}
+
 button:hover {
     background-color: #1AA34A;
 }
