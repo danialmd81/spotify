@@ -278,10 +278,7 @@ app.get('/AddSong', (req, res) => {
 
 app.post('/addSong', upload.single('audio_file'), (req, res) => {
     const { name, genre, country, age, lyric, is_limited } = req.body;
-    let isLimitedAsInt = false;
-    if (is_limited == "true") {
-        isLimitedAsInt = true;
-    }
+    let isLimitedAsInt = is_limited === 'true' ? 1 : 0;
     const audio_file = req.file.buffer;
 
     db.query('SELECT * FROM users WHERE username = ?', [req.session.username], (err, userResults) => {
@@ -292,19 +289,30 @@ app.post('/addSong', upload.single('audio_file'), (req, res) => {
         if (userResults.length > 0) {
             const artistId = userResults[0].UserID;
 
-            const query = 'INSERT INTO Songs (name, ArtistID, genre, country, age, lyric, is_limited, audio_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-            db.query(query, [name, artistId, genre, country, age, lyric, isLimitedAsInt, audio_file], (err, result) => {
+            db.query('SELECT * FROM Songs WHERE name = ? AND ArtistID = ?', [name, artistId], (err, songResults) => {
                 if (err) {
                     console.error(err);
-                    return res.status(500).send('Error adding song');
+                    return res.status(500).send('Error checking for song');
                 }
-                res.send('Song added successfully');
+                if (songResults.length > 0) {
+                    res.send(String(songResults[0].SongID));
+                } else {
+                    const query = 'INSERT INTO Songs (name, ArtistID, genre, country, age, lyric, is_limited, audio_file) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+                    db.query(query, [name, artistId, genre, country, age, lyric, isLimitedAsInt, audio_file], (err, result) => {
+                        if (err) {
+                            console.error(err);
+                            return res.status(500).send('Error adding song');
+                        }
+                        res.send(String(result.insertId));
+                    });
+                }
             });
         } else {
             res.status(404).send('User not found');
         }
     });
 });
+
 
 
 //add song
@@ -428,7 +436,7 @@ app.get('/getAllSongs', (req, res) => {
     if (req.session.userId) {
         const query = `
             SELECT 
-                s.SongID AS id, s.name AS song_name, 
+                s.SongID AS id, s.name AS song_name, s.lyric, 
                 TO_BASE64(s.audio_file) AS audio_file, 
                 a.name AS artist_name,
                 c.Comment AS comment, 
@@ -453,6 +461,7 @@ app.get('/getAllSongs', (req, res) => {
                         id: row.id,
                         name: row.song_name,
                         artist_name: row.artist_name,
+                        lyric: row.lyric,
                         audio_file: row.audio_file,
                         comments: []
                     };
@@ -928,10 +937,55 @@ app.post('/userremove', (req, res) => {
     });
 });
 
-
 // user concert
 
-// concert
+// add album
+
+app.get('/AddAlbum', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'addalbum.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.post('/addAlbum', upload.none(), (req, res) => {
+    const { title, genre, country, age, songs } = req.body;
+
+    db.query('SELECT * FROM users WHERE username = ?', [req.session.username], (err, userResults) => {
+        if (err) {
+            console.error(err);
+            return res.status(500).send('Error retrieving user information');
+        }
+        if (userResults.length > 0) {
+            const artistId = userResults[0].UserID;
+
+            const albumQuery = 'INSERT INTO Album (Title, ArtistID, genre, country, age) VALUES (?, ?, ?, ?, ?)';
+            db.query(albumQuery, [title, artistId, genre, country, age], (err, result) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send('Error adding album');
+                }
+
+                const songIds = JSON.parse(songs);
+                songIds.forEach(songId => {
+                    const albumSongQuery = 'INSERT INTO Albums_Songs (SongID, Album_Title) VALUES (?, ?)';
+                    db.query(albumSongQuery, [songId, title], (err, result) => {
+                        if (err) {
+                            console.error(err);
+                        }
+                    });
+                });
+
+                res.send('Album created successfully');
+            });
+        } else {
+            res.status(404).send('User not found');
+        }
+    });
+});
+
+// add album
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);

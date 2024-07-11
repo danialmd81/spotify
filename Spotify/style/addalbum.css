@@ -1,0 +1,13 @@
+#addSongButton {
+    margin: 10px 0;
+}
+
+#is_limited {
+    position: relative;
+    left: 300px !important;
+}
+
+.songForm {
+    display: flex;
+    flex-direction: column;
+}

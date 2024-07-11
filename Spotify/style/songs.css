@@ -86,6 +86,11 @@ input[type="range"]::-webkit-slider-thumb {
     color: #1DB954;
 }
 
+.lyric-section {
+    margin-left: 10px;
+    line-height: 30px;
+}
+
 .comment-section {
     margin-top: 20px;
 }

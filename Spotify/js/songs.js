@@ -22,6 +22,10 @@ async function loadSongs() {
                     <button class="favorite-btn">Add to Favorite</button>
                 </div>
             </div>
+            <div class="lyric-section">
+                <p>lyric : </p>
+                ${song.lyric}
+            </div>
             <div class="comment-section">
                 <input type="text" placeholder="Add a comment" class="comment-input">
                 <button class="comment-btn">Comment</button>
