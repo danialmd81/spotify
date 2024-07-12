@@ -252,6 +252,11 @@ values (
     );
 
 insert into
+    premiumusers (`PremiumID`, `Duration`)
+values (7, NULL),
+    (8, NULL);
+
+insert into
     artist (`ArtistID`, name)
 values (7, 'artist1'),
     (8, 'artist2');
