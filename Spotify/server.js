@@ -1735,6 +1735,56 @@ app.get('/getRecommendedSongs', (req, res) => {
 
 // home algorithm
 
+// friends activity
+
+app.get('/FriendsActivity', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'friendsreport.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/friends-activity', (req, res) => {
+    const userId = req.session.userId;
+
+    const query = `
+        SELECT u.username AS friendUsername, 'commented' AS action, c.Comment AS comment, 
+        COALESCE(p.name, s.name, a.Title) AS item
+        FROM Friends f
+        JOIN PremiumUsers pu ON f.FriendID = pu.PremiumID
+        JOIN Users u ON pu.PremiumID = u.UserID
+        LEFT JOIN Comments c ON c.PrID = pu.PremiumID
+        LEFT JOIN Playlists p ON c.PID = p.PlaylistID
+        LEFT JOIN Songs s ON c.SID = s.SongID
+        LEFT JOIN Album a ON c.ATitle = a.Title
+        WHERE f.PremiumID = ?
+        UNION
+        SELECT u.username AS friendUsername, 'liked' AS action, NULL AS comment, 
+        COALESCE(p.name, s.name, a.Title) AS item
+        FROM Friends f
+        JOIN PremiumUsers pu ON f.FriendID = pu.PremiumID
+        JOIN Users u ON pu.PremiumID = u.UserID
+        LEFT JOIN Likes l ON l.PrID = pu.PremiumID
+        LEFT JOIN Playlists p ON l.PID = p.PlaylistID
+        LEFT JOIN Songs s ON l.SID = s.SongID
+        LEFT JOIN Album a ON l.ATitle = a.Title
+        WHERE f.PremiumID = ?
+        ORDER BY friendUsername, action;
+    `;
+
+    db.query(query, [userId, userId], (err, results) => {
+        if (err) {
+            console.error('Error executing query:', err.stack);
+            res.status(500).send('Error fetching friends activity.');
+            return;
+        }
+        res.json(results);
+    });
+});
+
+// friends activity
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
