@@ -107,8 +107,8 @@ CREATE TABLE FriendRequests (
     sender_id INT,
     recipient_id INT,
     status VARCHAR(255) DEFAULT 'pending',
-    FOREIGN KEY (sender_id) REFERENCES Users (UserID) ON DELETE CASCADE,
-    FOREIGN KEY (recipient_id) REFERENCES Users (UserID) ON DELETE CASCADE
+    FOREIGN KEY (sender_id) REFERENCES PremiumUsers(PremiumID) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES PremiumUsers(PremiumID) ON DELETE CASCADE
 );
 
 CREATE TABLE Followers (
