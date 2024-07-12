@@ -1,9 +1,8 @@
-document.getElementById('addSongButton').addEventListener('click', function () {
+const songIds = [];
+
+document.addEventListener("DOMContentLoaded", () => {
     const songsContainer = document.getElementById('songsContainer');
-    const checkExistSongForm = document.querySelector(".songForm");
-    if (checkExistSongForm) {
-        checkExistSongForm.remove();
-    }
+
     const songForm = document.createElement('div');
     songForm.className = 'songForm';
 
@@ -31,6 +30,34 @@ document.getElementById('addSongButton').addEventListener('click', function () {
     `;
 
     songsContainer.appendChild(songForm);
+})
+
+document.getElementById('addSongButton').addEventListener('click', async function () {
+
+    const songs = document.querySelector('.songForm');
+
+    const songFormData = new FormData();
+    songFormData.append('name', songs.querySelector('.name').value);
+    songFormData.append('genre', songs.querySelector('.genre').value);
+    songFormData.append('country', songs.querySelector('.country').value);
+    songFormData.append('age', songs.querySelector('.age').value);
+    songFormData.append('lyric', songs.querySelector('.lyric').value);
+    songFormData.append('is_limited', songs.querySelector('.is_limited').checked);
+    songFormData.append('audio_file', songs.querySelector('.audio_file').files[0]);
+
+    const songResponse = await fetch('/addSong', {
+        method: 'POST',
+        body: songFormData
+    });
+
+    if (songResponse.ok) {
+        alert('song added to album.');
+        const songId = await songResponse.text();
+        songIds.push(songId);
+    } else {
+        alert('Failed to add song.');
+        return;
+    }
 });
 
 document.getElementById('addAlbumForm').addEventListener('submit', async function (e) {
@@ -41,32 +68,6 @@ document.getElementById('addAlbumForm').addEventListener('submit', async functio
     albumData.append('genre', document.getElementById('albumGenre').value);
     albumData.append('country', document.getElementById('albumCountry').value);
     albumData.append('age', document.getElementById('albumAge').value);
-
-    const songs = document.getElementsByClassName('songForm');
-    const songIds = [];
-    for (let i = 0; i < songs.length; i++) {
-        const songFormData = new FormData();
-        songFormData.append('name', songs[i].querySelector('.name').value);
-        songFormData.append('genre', songs[i].querySelector('.genre').value);
-        songFormData.append('country', songs[i].querySelector('.country').value);
-        songFormData.append('age', songs[i].querySelector('.age').value);
-        songFormData.append('lyric', songs[i].querySelector('.lyric').value);
-        songFormData.append('is_limited', songs[i].querySelector('.is_limited').checked);
-        songFormData.append('audio_file', songs[i].querySelector('.audio_file').files[0]);
-
-        const songResponse = await fetch('/addSong', {
-            method: 'POST',
-            body: songFormData
-        });
-
-        if (songResponse.ok) {
-            const songId = await songResponse.text();
-            songIds.push(songId);
-        } else {
-            alert('Failed to add song.');
-            return;
-        }
-    }
 
     albumData.append('songs', JSON.stringify(songIds));
 
