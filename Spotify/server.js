@@ -447,7 +447,7 @@ app.get('/Songs', (req, res) => {
 
 app.get('/getAllSongs', (req, res) => {
     if (req.session.userId) {
-        const query = `
+        let query = `
             SELECT 
                 s.SongID AS id, s.name AS song_name, s.lyric, 
                 TO_BASE64(s.audio_file) AS audio_file, 
@@ -461,7 +461,13 @@ app.get('/getAllSongs', (req, res) => {
             LEFT JOIN Users u ON c.PrID = u.UserID
         `;
 
-        db.query(query, (err, results) => {
+        const searchCriteria = req.query.query ? `%${req.query.query}%` : '%';
+
+        query += `
+            WHERE s.name LIKE ? OR a.name LIKE ? OR s.genre LIKE ? OR s.country LIKE ? OR s.age LIKE ? 
+        `;
+
+        db.query(query, [searchCriteria, searchCriteria, searchCriteria, searchCriteria, searchCriteria], (err, results) => {
             if (err) {
                 console.error(err);
                 return res.status(500).send('Error fetching songs');
@@ -489,6 +495,36 @@ app.get('/getAllSongs', (req, res) => {
     } else {
         res.status(401).send('User not logged in');
     }
+});
+
+app.post('/likeSong', (req, res) => {
+    const { songId } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Likes (PrID, SID) VALUES (?, ?)';
+    db.query(sql, [userId, songId], (err, result) => {
+        if (err) throw err;
+        res.send('Song liked!');
+    });
+});
+
+app.post('/addToFavorite', (req, res) => {
+    const { songId } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Favorite (PrID, SID) VALUES (?, ?)';
+    db.query(sql, [userId, songId], (err, result) => {
+        if (err) throw err;
+        res.send('Song added to favorites!');
+    });
+});
+
+app.post('/addComment', (req, res) => {
+    const { songId, comment } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Comments (PrID, SID, Comment) VALUES (?, ?, ?)';
+    db.query(sql, [userId, songId, comment], (err, result) => {
+        if (err) throw err;
+        res.send('Comment added!');
+    });
 });
 
 app.post('/likeSong', (req, res) => {
@@ -1160,11 +1196,12 @@ app.get('/Albums', (req, res) => {
 
 app.get('/getAllAlbums', (req, res) => {
     if (req.session.userId) {
-        const query = `
+        const { query } = req.query;
+        let searchQuery = `
             SELECT 
                 a.Title AS title, a.genre AS genre, a.country AS country, a.age AS age,
                 art.name AS artist_name,
-                s.SongID AS song_id, s.name AS song_name, s.audio_file AS audio_file,
+                s.SongID AS song_id, s.name AS song_name, TO_BASE64(s.audio_file) AS audio_file,
                 c.Comment AS comment, c.PrID AS commenterId, u.username AS commenter_name
             FROM Album a
             LEFT JOIN Artist art ON a.ArtistID = art.ArtistID
@@ -1174,48 +1211,62 @@ app.get('/getAllAlbums', (req, res) => {
             LEFT JOIN Users u ON c.PrID = u.UserID
         `;
 
-        db.query(query, (err, results) => {
+        if (query) {
+            searchQuery += `
+                WHERE a.Title LIKE '%${query}%'
+                OR art.name LIKE '%${query}%'
+                OR a.genre LIKE '%${query}%'
+                OR a.age LIKE '%${query}%'
+            `;
+        }
+
+        db.query(searchQuery, (err, results) => {
             if (err) {
                 console.error(err);
                 return res.status(500).send('Error fetching albums');
             }
-
-            const albumsMap = results.reduce((acc, row) => {
-                if (!acc[row.title]) {
-                    acc[row.title] = {
+            const albums = results.reduce((acc, row) => {
+                let album = acc.find(a => a.title === row.title);
+                if (!album) {
+                    album = {
                         title: row.title,
+                        artist_name: row.artist_name,
                         genre: row.genre,
                         country: row.country,
                         age: row.age,
-                        artist_name: row.artist_name,
                         songs: [],
                         comments: []
                     };
+                    acc.push(album);
                 }
-                if (row.song_id && !acc[row.title].songs.some(song => song.id === row.song_id)) {
-                    acc[row.title].songs.push({
+
+                if (row.song_id && !album.songs.some(s => s.id === row.song_id)) {
+                    album.songs.push({
                         id: row.song_id,
                         name: row.song_name,
-                        artist_name: row.artist_name,
-                        audio_file: row.audio_file ? row.audio_file.toString('base64') : null
+                        audio_file: row.audio_file
                     });
                 }
-                if (row.comment && !acc[row.title].comments.some(comment => comment.commenterId === row.commenterId && comment.text === row.comment)) {
-                    acc[row.title].comments.push({
-                        commenterId: row.commenterId,
-                        commenterName: row.commenter_name,
-                        text: row.comment
-                    });
-                }
-                return acc;
-            }, {});
 
-            res.json(Object.values(albumsMap));
+                if (row.comment && !album.comments.some(c => c.text === row.comment && c.commenterId === row.commenterId)) {
+                    album.comments.push({
+                        text: row.comment,
+                        commenterId: row.commenterId,
+                        commenterName: row.commenter_name
+                    });
+                }
+
+                return acc;
+            }, []);
+
+            res.json(albums);
         });
     } else {
-        res.status(401).send('User not logged in');
+        res.redirect('/');
     }
 });
+
+
 
 app.post('/likeAlbum', (req, res) => {
     const { albumTitle } = req.body;

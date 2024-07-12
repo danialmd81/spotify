@@ -1,5 +1,9 @@
-async function loadAlbums() {
-    const response = await fetch('/getAllAlbums');
+async function loadAlbums(searchCriteria = {}) {
+    let query = '';
+    if (Object.keys(searchCriteria).length > 0) {
+        query = '?' + new URLSearchParams(searchCriteria).toString();
+    }
+    const response = await fetch('/getAllAlbums' + query);
     const albums = await response.json();
     const albumsList = document.getElementById('albumsList');
     albumsList.innerHTML = '';
@@ -110,4 +114,14 @@ async function loadAlbums() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', loadAlbums);
+document.addEventListener('DOMContentLoaded', () => {
+    loadAlbums();
+
+    document.getElementById('searchBtn').addEventListener('click', () => {
+        const searchInput = document.getElementById('searchInput').value;
+        const searchCriteria = {
+            query: searchInput
+        };
+        loadAlbums(searchCriteria);
+    });
+});

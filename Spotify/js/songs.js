@@ -1,7 +1,11 @@
 let currentSongId = 0;
 
-async function loadSongs() {
-    const response = await fetch('/getAllSongs');
+async function loadSongs(searchCriteria = {}) {
+    let query = '';
+    if (Object.keys(searchCriteria).length > 0) {
+        query = '?' + new URLSearchParams(searchCriteria).toString();
+    }
+    const response = await fetch('/getAllSongs' + query);
     const songs = await response.json();
     const songsList = document.getElementById('songsList');
     songsList.innerHTML = '';
@@ -16,7 +20,7 @@ async function loadSongs() {
                 <span class="end">00:00</span>
                 <i class="fas fa-play play-btn"></i>
                 <audio controls>
-                    <source src="data:audio/mpeg;base64,${song.audio_file}" type="audio/mpeg">
+                    <source src="data:audio/*;base64,${song.audio_file}" type="audio/mpeg">
                     Your browser does not support the audio element.
                 </audio>
                 <div class="song-controls-btn">
@@ -179,3 +183,9 @@ document.getElementById('createPlaylistBtn').addEventListener('click', async () 
 
 document.addEventListener('DOMContentLoaded', loadSongs);
 document.querySelector('.close').addEventListener('click', closePlaylistModal);
+
+document.getElementById('searchBtn').addEventListener('click', () => {
+    const searchInput = document.getElementById('searchInput').value;
+    const searchCriteria = { query: searchInput };
+    loadSongs(searchCriteria);
+});
