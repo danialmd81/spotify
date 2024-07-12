@@ -1406,10 +1406,21 @@ app.get('/search-users', (req, res) => {
 app.post('/send-friend-request', (req, res) => {
     const recipientId = req.body.userId;
     const senderId = req.session.userId;
-    const sql = 'INSERT INTO FriendRequests (sender_id, recipient_id) VALUES (?, ?)';
-    db.query(sql, [senderId, recipientId], (err) => {
+
+    // Check if both sender and recipient are premium users
+    const checkPremiumSql = 'SELECT COUNT(*) AS count FROM PremiumUsers WHERE PremiumID IN (?, ?)';
+    db.query(checkPremiumSql, [senderId, recipientId], (err, result) => {
         if (err) throw err;
-        res.json({ success: true });
+
+        if (result[0].count === 2) {
+            const sql = 'INSERT INTO FriendRequests (sender_id, recipient_id) VALUES (?, ?)';
+            db.query(sql, [senderId, recipientId], (err) => {
+                if (err) throw err;
+                res.json({ success: true });
+            });
+        } else {
+            res.json({ success: false, message: 'Both users must be premium users' });
+        }
     });
 });
 
@@ -1447,7 +1458,6 @@ app.post('/friend-requests/:id', (req, res) => {
         });
     }
 });
-
 
 app.get('/accepted-requests', (req, res) => {
     const sql = `

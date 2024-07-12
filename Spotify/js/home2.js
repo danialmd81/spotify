@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Function to load recommended songs
     async function loadRecommendedSongs() {
         try {
             const response = await fetch('/getRecommendedSongs');
@@ -19,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Function to create a song element
     function createSongElement(song) {
         const songElement = document.createElement('div');
         songElement.className = 'song-item';
@@ -88,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Like button functionality
         songElement.querySelector('.like-btn').addEventListener('click', async () => {
             try {
                 const response = await fetch('/likeSong', {
@@ -102,14 +99,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     throw new Error('Failed to like song');
                 }
                 alert('Song liked!');
-                // Reload recommended songs after liking
                 loadRecommendedSongs();
             } catch (error) {
                 console.error('Error liking song:', error.message);
             }
         });
 
-        // Favorite button functionality
         songElement.querySelector('.favorite-btn').addEventListener('click', async () => {
             await fetch('/addToFavorite', {
                 method: 'POST',
@@ -121,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('Song added to favorites!');
         });
 
-        // Comment button functionality
         songElement.querySelector('.comment-btn').addEventListener('click', async () => {
             const commentInput = songElement.querySelector('.comment-input');
             const commentText = commentInput.value.trim();
@@ -143,6 +137,5 @@ document.addEventListener('DOMContentLoaded', () => {
         return songElement;
     }
 
-    // Load recommended songs when DOM is loaded
     loadRecommendedSongs();
 });
