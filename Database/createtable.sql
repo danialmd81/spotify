@@ -164,6 +164,16 @@ CREATE Table Favorite_Artist (
     Foreign Key (ArID) REFERENCES Artist (ArtistID) on DELETE CASCADE
 );
 
+CREATE TABLE Messages (
+    MessageID INT PRIMARY KEY AUTO_INCREMENT,
+    sender INT NOT NULL,
+    receiver INT NOT NULL,
+    text TEXT NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender) REFERENCES PremiumUsers (PremiumID),
+    FOREIGN KEY (receiver) REFERENCES PremiumUsers (PremiumID)
+);
+
 DROP PROCEDURE IF EXISTS DecreaseDuration;
 
 DELIMITER $$

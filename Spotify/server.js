@@ -1477,6 +1477,55 @@ app.get('/rejected-requests', (req, res) => {
 
 // freinds
 
+
+// chat
+
+app.get('/Chat', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'chat.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getfriendsforchat', (req, res) => {
+    const userId = req.session.userId;
+    const query = `SELECT * FROM Users WHERE UserID IN (SELECT FriendID FROM Friends WHERE PremiumID = ${userId})`;
+    db.query(query, (error, results) => {
+        if (error) throw error;
+        res.json(results);
+    });
+});
+
+app.get('/messages', (req, res) => {
+    const userId = req.session.userId;
+    const friendId = req.query.friendId;
+    const query = `
+        SELECT m.*, u1.username AS sender_name, u2.username AS receiver_name
+        FROM Messages m
+        JOIN Users u1 ON m.sender = u1.UserID
+        JOIN Users u2 ON m.receiver = u2.UserID
+        WHERE (m.sender = ? AND m.receiver = ?) OR (m.sender = ? AND m.receiver = ?)
+        ORDER BY m.timestamp
+    `;
+    db.query(query, [userId, friendId, friendId, userId], (error, results) => {
+        if (error) throw error;
+        res.json(results);
+    });
+});
+
+app.post('/send', (req, res) => {
+    const userId = req.session.userId;
+    const { friendId, text } = req.body;
+    const query = 'INSERT INTO Messages (sender, receiver, text) VALUES (?, ?, ?)';
+    db.query(query, [userId, friendId, text], (error, results) => {
+        if (error) throw error;
+        res.json({ id: results.insertId, text });
+    });
+});
+
+// chat
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });
