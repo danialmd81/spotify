@@ -1526,6 +1526,64 @@ app.post('/send', (req, res) => {
 
 // chat
 
+// home algorithm
+
+app.get('/getRecommendedSongs', (req, res) => {
+    if (req.session.userId) {
+        const query = `
+                SELECT 
+                    s.SongID AS id, s.name AS song_name, s.lyric, 
+                    TO_BASE64(s.audio_file) AS audio_file, 
+                    a.name AS artist_name,
+                    c.Comment AS comment, 
+                    c.PrID AS commenterId,
+                    u.username AS commenter_name
+                FROM Songs s
+                JOIN Artist a ON s.ArtistID = a.ArtistID
+                LEFT JOIN Likes l ON s.SongID = l.SID AND l.PrID = ?
+                LEFT JOIN Comments c ON s.SongID = c.SID
+                LEFT JOIN Users u ON c.PrID = u.UserID
+                WHERE s.ArtistID IN (
+                    SELECT DISTINCT s2.ArtistID
+                    FROM Songs s2
+                    JOIN Likes l2 ON s2.SongID = l2.SID
+                    WHERE l2.PrID = ?
+                )
+                AND l.PrID IS NULL
+        `;
+
+        db.query(query, [req.session.userId, req.session.userId], (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching recommended songs');
+            }
+
+            const songsMap = results.reduce((acc, row) => {
+                if (!acc[row.id]) {
+                    acc[row.id] = {
+                        id: row.id,
+                        name: row.song_name,
+                        artist_name: row.artist_name,
+                        lyric: row.lyric,
+                        audio_file: row.audio_file,
+                        comments: []
+                    };
+                }
+                if (row.comment) {
+                    acc[row.id].comments.push({ commenterId: row.commenterId, commenterName: row.commenter_name, text: row.comment });
+                }
+                return acc;
+            }, {});
+
+            res.json(Object.values(songsMap));
+        });
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+// home algorithm
+
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
 });

@@ -1,0 +1,106 @@
+.content h1 {
+    margin-top: 0;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #1db954;
+    /* Spotify green */
+}
+
+.song-list {
+    margin-top: 20px;
+}
+
+/* Buttons */
+button {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #444;
+}
+
+/* Links */
+a {
+    color: #1db954;
+    /* Spotify green */
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Form inputs */
+input[type="text"],
+input[type="password"],
+textarea {
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+textarea:focus {
+    outline: none;
+    border-color: #1db954;
+    /* Spotify green */
+}
+
+/* Audio controls */
+.audio-controls {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.audio-controls button {
+    margin-left: 10px;
+}
+
+/* Comments */
+.comment-section {
+    margin-top: 20px;
+}
+
+.comment-section .comment {
+    background-color: #333;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.comment-section .comment strong {
+    color: #1db954;
+    /* Spotify green */
+}
+
+.comment-section input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #555;
+    border-radius: 4px;
+    background-color: #333;
+    color: #fff;
+}
+
+.comment-section .comment-btn {
+    padding: 8px 20px;
+    background-color: #1db954;
+    /* Spotify green */
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.comment-section .comment-btn:hover {
+    background-color: #0f802c;
+    /* Darker green on hover */
+}
