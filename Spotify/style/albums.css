@@ -1,0 +1,73 @@
+.album-item {
+    background-color: #282828;
+    border: 1px solid #404040;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 10px;
+    transition: background-color 0.3s;
+}
+
+.album-item:hover {
+    background-color: #333;
+}
+
+.album-item h3 {
+    margin: 0 0 10px;
+}
+
+.album-details p {
+    margin: 5px 0;
+}
+
+.album-controls {
+    margin-bottom: 10px;
+}
+
+.album-controls button {
+    background-color: #1DB954;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    margin-right: 10px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.album-controls button:hover {
+    background-color: #1ed760;
+}
+
+.songs-list p {
+    margin: 5px 0;
+}
+
+.comment-section {
+    margin-top: 10px;
+}
+
+.comment-section input {
+    width: calc(100% - 100px);
+    padding: 10px;
+    margin-right: 10px;
+    border: 1px solid #404040;
+    border-radius: 5px;
+    background-color: #121212;
+    color: white;
+}
+
+.comment-section button {
+    background-color: #1DB954;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.comment-section button:hover {
+    background-color: #1ed760;
+}
+
+.comments .comment {
+    margin-top: 10px;
+}

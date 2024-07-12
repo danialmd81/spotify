@@ -1148,6 +1148,97 @@ app.post('/addAlbum', upload.none(), (req, res) => {
 
 // add album
 
+// Albums
+
+app.get('/Albums', (req, res) => {
+    if (req.session.loggedin) {
+        res.sendFile(path.join(__dirname, 'public', 'albums.html'));
+    } else {
+        res.redirect('/');
+    }
+});
+
+app.get('/getAllAlbums', (req, res) => {
+    if (req.session.userId) {
+        const query = `
+            SELECT 
+                a.Title AS title, a.genre AS genre, a.country AS country, a.age AS age,
+                art.name AS artist_name,
+                s.SongID AS song_id, s.name AS song_name, s.audio_file AS audio_file,
+                c.Comment AS comment, c.PrID AS commenterId, u.username AS commenter_name
+            FROM Album a
+            LEFT JOIN Artist art ON a.ArtistID = art.ArtistID
+            LEFT JOIN Albums_Songs als ON a.Title = als.Album_Title
+            LEFT JOIN Songs s ON als.SongID = s.SongID
+            LEFT JOIN Comments c ON a.Title = c.ATitle
+            LEFT JOIN Users u ON c.PrID = u.UserID
+        `;
+
+        db.query(query, (err, results) => {
+            if (err) {
+                console.error(err);
+                return res.status(500).send('Error fetching albums');
+            }
+
+            const albumsMap = results.reduce((acc, row) => {
+                if (!acc[row.title]) {
+                    acc[row.title] = {
+                        title: row.title,
+                        genre: row.genre,
+                        country: row.country,
+                        age: row.age,
+                        artist_name: row.artist_name,
+                        songs: [],
+                        comments: []
+                    };
+                }
+                if (row.song_id && !acc[row.title].songs.some(song => song.id === row.song_id)) {
+                    acc[row.title].songs.push({
+                        id: row.song_id,
+                        name: row.song_name,
+                        artist_name: row.artist_name,
+                        audio_file: row.audio_file ? row.audio_file.toString('base64') : null
+                    });
+                }
+                if (row.comment && !acc[row.title].comments.some(comment => comment.commenterId === row.commenterId && comment.text === row.comment)) {
+                    acc[row.title].comments.push({
+                        commenterId: row.commenterId,
+                        commenterName: row.commenter_name,
+                        text: row.comment
+                    });
+                }
+                return acc;
+            }, {});
+
+            res.json(Object.values(albumsMap));
+        });
+    } else {
+        res.status(401).send('User not logged in');
+    }
+});
+
+app.post('/likeAlbum', (req, res) => {
+    const { albumTitle } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Likes (PrID, ATitle) VALUES (?, ?)';
+    db.query(sql, [userId, albumTitle], (err, result) => {
+        if (err) throw err;
+        res.send('Album liked!');
+    });
+});
+
+app.post('/addAlbumComment', (req, res) => {
+    const { albumTitle, comment } = req.body;
+    const userId = req.session.userId;
+    const sql = 'INSERT INTO Comments (PrID, ATitle, Comment) VALUES (?, ?, ?)';
+    db.query(sql, [userId, albumTitle, comment], (err, result) => {
+        if (err) throw err;
+        res.send('Comment added!');
+    });
+});
+
+// Albums
+
 // delete album
 
 app.get('/DeleteAlbum', (req, res) => {
@@ -1229,7 +1320,7 @@ app.get('/getAllPlaylists', (req, res) => {
             SELECT 
                 p.PlaylistID AS id, p.name AS playlist_name,
                 s.SongID AS song_id, s.name AS song_name, a.name AS artist_name,
-                s.audio_file AS audio_file, -- Assuming audio_file is stored in the Songs table
+                s.audio_file AS audio_file, 
                 c.Comment AS comment, c.PrID AS commenterId, u.username AS commenter_name
             FROM Playlists p
             LEFT JOIN Playlist_Songs ps ON p.PlaylistID = ps.PID
