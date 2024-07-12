@@ -1,20 +1,22 @@
-async function loadPlaylists() {
-    const response = await fetch('/getAllPlaylists');
-    const playlists = await response.json();
-    const playlistsList = document.getElementById('playlistsList');
-    playlistsList.innerHTML = '';
+async function loadAlbums() {
+    const response = await fetch('/getAllAlbums');
+    const albums = await response.json();
+    const albumsList = document.getElementById('albumsList');
+    albumsList.innerHTML = '';
 
-    playlists.forEach(playlist => {
-        const playlistElement = document.createElement('div');
-        playlistElement.className = 'playlist-item';
-        playlistElement.innerHTML = `
-            <h3>${playlist.name}</h3>
-            <div class="playlist-controls">
+    albums.forEach(album => {
+        const albumElement = document.createElement('div');
+        albumElement.className = 'album-item';
+        albumElement.innerHTML = `
+            <h3>${album.title}</h3>
+            <div class="album-details">
+                <p>Artist: ${album.artist_name}</p>
+            </div>
+            <div class="album-controls">
                 <button class="like-btn">Like</button>
-                <button class="favorite-btn">Add to Favorite</button>
             </div>
             <div class="songs-list">
-                ${playlist.songs.map(song => `
+                ${album.songs.map(song => `
                     <div class="song-item" data-song-id="${song.id}">
                         <p>${song.name} by ${song.artist_name}</p>
                         <div class="song-controls">
@@ -34,40 +36,31 @@ async function loadPlaylists() {
                 <input type="text" placeholder="Add a comment" class="comment-input">
                 <button class="comment-btn">Comment</button>
                 <div class="comments">
-                    ${playlist.comments ? playlist.comments.map(comment => `<div class="comment"><strong>${comment.commenterName}:</strong> ${comment.text}</div>`).join('') : ''}
+                    ${album.comments ? album.comments.map(comment => `<div class="comment"><strong>${comment.commenterName}:</strong> ${comment.text}</div>`).join('') : ''}
                 </div>
             </div>
         `;
-        playlistsList.appendChild(playlistElement);
+        albumsList.appendChild(albumElement);
 
-        playlistElement.querySelector('.like-btn').addEventListener('click', async () => {
-            await fetch('/likePlaylist', {
+        albumElement.querySelector('.like-btn').addEventListener('click', async () => {
+            await fetch('/likeAlbum', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playlistId: playlist.id })
+                body: JSON.stringify({ albumTitle: album.title })
             });
-            alert('Playlist liked!');
+            alert('Album liked!');
         });
 
-        playlistElement.querySelector('.favorite-btn').addEventListener('click', async () => {
-            await fetch('/addToFavoritePlaylist', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ playlistId: playlist.id })
-            });
-            alert('Playlist added to favorites!');
-        });
-
-        playlistElement.querySelector('.comment-btn').addEventListener('click', async () => {
-            const commentInput = playlistElement.querySelector('.comment-input');
+        albumElement.querySelector('.comment-btn').addEventListener('click', async () => {
+            const commentInput = albumElement.querySelector('.comment-input');
             const comment = commentInput.value;
             if (comment) {
-                await fetch('/addPlaylistComment', {
+                await fetch('/addAlbumComment', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ playlistId: playlist.id, comment })
+                    body: JSON.stringify({ albumTitle: album.title, comment })
                 });
-                const commentsDiv = playlistElement.querySelector('.comments');
+                const commentsDiv = albumElement.querySelector('.comments');
                 const commentElement = document.createElement('div');
                 commentElement.className = 'comment';
                 commentElement.innerHTML = `<strong>You:</strong> ${comment}`;
@@ -76,7 +69,7 @@ async function loadPlaylists() {
             }
         });
 
-        const songElements = playlistElement.querySelectorAll('.song-item');
+        const songElements = albumElement.querySelectorAll('.song-item');
         songElements.forEach(songElement => {
             const audio = songElement.querySelector('audio');
             const playBtn = songElement.querySelector('.play-btn');
@@ -117,4 +110,4 @@ async function loadPlaylists() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', loadPlaylists);
+document.addEventListener('DOMContentLoaded', loadAlbums);
