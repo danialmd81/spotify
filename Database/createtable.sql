@@ -115,8 +115,8 @@ CREATE TABLE FriendRequests (
     sender_id INT,
     recipient_id INT,
     status VARCHAR(255) DEFAULT 'pending',
-    FOREIGN KEY (sender_id) REFERENCES PremiumUsers(PremiumID) ON DELETE CASCADE,
-    FOREIGN KEY (recipient_id) REFERENCES PremiumUsers(PremiumID) ON DELETE CASCADE
+    FOREIGN KEY (sender_id) REFERENCES PremiumUsers (PremiumID) ON DELETE CASCADE,
+    FOREIGN KEY (recipient_id) REFERENCES PremiumUsers (PremiumID) ON DELETE CASCADE
 );
 
 CREATE TABLE Followers (
@@ -208,3 +208,50 @@ CREATE EVENT DecreaseDurationEvent ON SCHEDULE EVERY 1 DAY STARTS TIMESTAMP(CURR
 CALL DecreaseDuration ();
 
 SHOW EVENTS;
+
+insert into
+    users (
+        username,
+        password,
+        `Email`,
+        birthday,
+        address,
+        is_premium
+    )
+values (
+        'danial',
+        'dani',
+        'a',
+        '2002-02-02',
+        'a',
+        0
+    ),
+    (
+        'sobhan',
+        'sobi',
+        'b',
+        '2002-02-02',
+        'a',
+        0
+    ),
+    (
+        'artist1',
+        '1',
+        'c',
+        '2002-02-02',
+        'a',
+        1
+    ),
+    (
+        'artist2',
+        '2',
+        'd',
+        '2002-02-02',
+        'a',
+        1
+    );
+
+insert into
+    artist (`ArtistID`, name)
+values (7, 'artist1'),
+    (8, 'artist2');
